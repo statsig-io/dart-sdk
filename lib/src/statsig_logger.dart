@@ -5,12 +5,18 @@ class StatsigLogger {
 
   StatsigLogger(this._network);
 
-  void logGateExposure(String gateName) async {
-    _log("statsig::gate_exposure");
+  void logGateExposure(String gateName, Map gateData) async {
+    _log("statsig::gate_exposure", {
+      "gate": gateName,
+      "gateValue": gateData["value"].toString(),
+      "ruleID": gateData["rule_id"]
+    });
   }
 
-  void _log(String eventName) async {
-    var arr = [eventName];
+  void _log(String eventName, Map metadata) async {
+    var arr = [
+      {"eventName": eventName, "metadata": metadata}
+    ];
     _network.sendEvents(arr);
   }
 }

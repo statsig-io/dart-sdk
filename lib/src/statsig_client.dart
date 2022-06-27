@@ -1,3 +1,6 @@
+import 'dart:convert';
+import "package:crypto/crypto.dart";
+
 import 'package:statsig/src/network_service.dart';
 import 'package:statsig/src/statsig_logger.dart';
 import 'package:statsig/src/statsig_options.dart';
@@ -26,9 +29,14 @@ class StatsigClient {
   }
 
   bool? checkGate(String gateName) {
-    var res = store["feature_gates"]?[gateName];
-    _logger.logGateExposure(gateName);
-    return res;
+    var hash = _getHash(gateName);
+    var res = store["feature_gates"]?[hash];
+    if (res == null) {
+      return false;
+    }
+
+    _logger.logGateExposure(gateName, res);
+    return res["value"];
   }
 
   DynamicConfig? getConfig(String configName) {
@@ -37,5 +45,11 @@ class StatsigClient {
       return DynamicConfig(configName, null);
     }
     return DynamicConfig(configName, config["value"]);
+  }
+
+  String _getHash(String input) {
+    var bytes = utf8.encode(input);
+    var digest = sha256.convert(bytes);
+    return base64Encode(digest.bytes);
   }
 }
