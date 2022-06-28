@@ -3,8 +3,7 @@ import 'package:statsig/src/utils.dart';
 import 'package:statsig/statsig.dart';
 import 'package:test/test.dart';
 
-var gateAlwaysOnKey = 'always_on';
-var gateAlwaysOnHashKey = Utils.hash(gateAlwaysOnKey);
+import 'test_data.dart';
 
 void main() {
   setUpAll(() {
@@ -18,25 +17,9 @@ void main() {
 
   group('Statsig when Initialized', () {
     setUp(() async {
-      final interceptor = nock('https://api.statsig.com').post('/v1/initialize')
-        ..reply(200, '''
-        {
-          "feature_gates": {
-            "a_gate": true
-          }, 
-          "dynamic_configs": {
-            "a_config": {
-              "value": {
-                "a_string_value": "foo", 
-                "a_bool_value": true,
-                "a_number_value": 420
-              }
-            }
-          }, 
-          "layer_configs": {}, 
-          "has_updates": true, 
-          "time": 1621637839}
-        ''');
+      final interceptor = nock('https://api.statsig.com')
+          .post('/v1/initialize', (body) => true)
+        ..reply(200, TestData.initializeResponse);
       await Statsig.initialize('a-key');
 
       expect(interceptor.isDone, true);

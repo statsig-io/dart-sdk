@@ -26,7 +26,7 @@ class Statsig {
   }
 
   static bool checkGate(String gateName, [bool defaultValue = false]) {
-    return _clientInstance?.checkGate(gateName) ?? defaultValue;
+    return _clientInstance?.checkGate(gateName, defaultValue) ?? defaultValue;
   }
 
   static DynamicConfig? getConfig(String configName) {

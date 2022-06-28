@@ -22,11 +22,12 @@ void main() {
 
   group('Statsig when Initialized', () {
     Interceptor? loggingStub;
-    dynamic request;
+    Map? logs;
     Completer<bool>? completer;
 
     setUp(() async {
-      final interceptor = nock('https://api.statsig.com').post('/v1/initialize')
+      final interceptor = nock('https://api.statsig.com')
+          .post('/v1/initialize', (body) => true)
         ..reply(200, TestData.initializeResponse);
       await Statsig.initialize('a-key');
 
@@ -34,65 +35,55 @@ void main() {
 
       completer = new Completer();
       loggingStub = nock('https://api.statsig.com').post('/v1/rgstr', (body) {
-        request = jsonDecode(utf8.decode(body)) as Map;
+        logs = jsonDecode(utf8.decode(body)) as Map;
         return true;
       })
         ..reply(200, '{}')
         ..onReply(() => completer?.complete(true));
-      request = null;
+      logs = null;
     });
 
     group("Feature Gates", () {
       test('does not log gates that do not exist', () async {
         Statsig.checkGate('not_a_gate');
-        expect(request, null);
+        Statsig.shutdown();
+        expect(logs, null);
       });
 
       test('logs gate exposures', () async {
         Statsig.checkGate('a_gate');
+        Statsig.shutdown();
         await completer?.future;
 
         expect(loggingStub?.isDone, true);
-        expect(request is Map, true);
 
-        expect(request, {
-          "events": [
-            {
-              "eventName": "statsig::gate_exposure",
-              "metadata": {
-                "gate": "a_gate",
-                "gateValue": "true",
-                "ruleID": "a_rule_id"
-              }
-            }
-          ],
-          "statsigMetadata": {"sdkType": "dart", "sdkVersion": "1.0.0"}
-        });
+        var event = (logs as Map)['events'][0] as Map;
+        expect(event['eventName'], "statsig::gate_exposure");
+        expect(event['metadata'],
+            {"gate": "a_gate", "gateValue": "true", "ruleID": "a_rule_id"});
+        expect((logs as Map)['statsigMetadata']['sdkType'], 'dart');
       });
     });
 
     group("Dynamic Configs", () {
       test('does not log configs that do not exist', () async {
         Statsig.checkGate('not_a_config');
-        expect(request, null);
+        Statsig.shutdown();
+        expect(logs, null);
       });
 
       test('logs config exposures', () async {
-        Statsig.checkGate('a_gate');
+        Statsig.getConfig('a_config');
+        Statsig.shutdown();
         await completer?.future;
 
         expect(loggingStub?.isDone, true);
-        expect(request is Map, true);
 
-        expect(request, {
-          "events": [
-            {
-              "eventName": "statsig::config_exposure",
-              "metadata": {"config": "a_config", "ruleID": "a_rule_id"}
-            }
-          ],
-          "statsigMetadata": {"sdkType": "dart", "sdkVersion": "1.0.0"}
-        });
+        var event = (logs as Map)['events'][0] as Map;
+        expect(event['eventName'], "statsig::config_exposure");
+        expect(
+            event['metadata'], {"config": "a_config", "ruleID": "a_rule_id"});
+        expect((logs as Map)['statsigMetadata']['sdkType'], 'dart');
       });
     });
   });

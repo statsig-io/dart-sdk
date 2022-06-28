@@ -44,11 +44,11 @@ class StatsigClient {
     await fetchInitialValues();
   }
 
-  bool? checkGate(String gateName) {
+  bool? checkGate(String gateName, [bool defaultValue = false]) {
     var hash = _getHash(gateName);
     var res = _store["feature_gates"]?[hash];
     if (res == null) {
-      return false;
+      return defaultValue;
     }
 
     _logger.enqueue(StatsigEvent.createGateExposure(_user, gateName,
