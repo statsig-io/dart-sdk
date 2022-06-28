@@ -41,6 +41,14 @@ class Statsig {
     return _clientInstance?.getLayer(layerName);
   }
 
+  static void logEvent(String eventName,
+      {String? stringValue = null,
+      double? doubleValue = null,
+      Map<String, String>? metadata = null}) {
+    return _clientInstance?.logEvent(eventName,
+        stringValue: stringValue, doubleValue: doubleValue, metadata: metadata);
+  }
+
   @visibleForTesting
   static void reset() {
     return _clientInstance = null;

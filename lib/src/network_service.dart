@@ -19,7 +19,12 @@ class NetworkService {
     var url = Uri.parse(_host + '/initialize');
     var response =
         await _post(url, {"user": user, "statsigMetadata": statsigMeta});
-    return jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+
+    try {
+      return jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+    } catch (_) {
+      return {};
+    }
   }
 
   Future<void> sendEvents(List<StatsigEvent> events) async {

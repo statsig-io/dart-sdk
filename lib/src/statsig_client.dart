@@ -97,6 +97,15 @@ class StatsigClient {
     return Layer(layerName, res["value"], onExposure);
   }
 
+  void logEvent(String eventName,
+      {String? stringValue = null,
+      double? doubleValue = null,
+      Map<String, String>? metadata = null}) {
+    _logger.enqueue(StatsigEvent.createCustomEvent(
+        _user, eventName, stringValue, doubleValue, metadata));
+    return;
+  }
+
   String _getHash(String input) {
     var bytes = utf8.encode(input);
     var digest = sha256.convert(bytes);
