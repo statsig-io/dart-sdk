@@ -41,7 +41,7 @@ class StatsigClient {
     _store = {};
     _user = user;
 
-    fetchInitialValues();
+    await fetchInitialValues();
   }
 
   bool? checkGate(String gateName) {
