@@ -8,7 +8,6 @@ environment:
 
 dependencies:
   http: ^0.13.4
-  vector_math: ^2.0.8
 
 dev_dependencies:
   lints: ^1.0.0

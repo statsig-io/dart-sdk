@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1.3
+        with:
+          sdk: 2.16.1
       - name: Run Tests
         run: |
           dart pub get
