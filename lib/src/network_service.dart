@@ -7,16 +7,39 @@ import 'package:statsig/statsig.dart';
 const defaultHost = 'https://statsigapi.net/v1';
 const statsigMeta = {"sdkType": "dart", "sdkVersion": "1.0.0"};
 
-class NetworkService {
-  late String _host;
+const retryCodes = {
+  408: true,
+  500: true,
+  502: true,
+  503: true,
+  504: true,
+  522: true,
+  524: true,
+  599: true,
+};
 
-  NetworkService(StatsigOptions options) {
-    _host = options.api ?? defaultHost;
+class NetworkService {
+  StatsigOptions _options;
+  late String _host;
+  late Map<String, String> _headers;
+
+  NetworkService(this._options, String sdkKey) {
+    _host = _options.api ?? defaultHost;
+    _headers = {
+      "Content-Type": "application/json",
+      "STATSIG-API-KEY": sdkKey,
+      "STATSIG-SDK-TYPE": statsigMeta['sdkType'] ?? '',
+      "STATSIG-SDK-VERSION": statsigMeta['sdkVersion'] ?? ""
+    };
   }
 
   Future<Map?> initialize(StatsigUser user) async {
     var url = Uri.parse(_host + '/initialize');
-    return await _post(url, {"user": user, "statsigMetadata": statsigMeta}, 3);
+    return await _post(url, {"user": user, "statsigMetadata": statsigMeta}, 3)
+        .timeout(Duration(seconds: _options.initTimeout), onTimeout: () {
+      print("[Statsig]: Initialize timed out.");
+      return null;
+    });
   }
 
   Future<void> sendEvents(List<StatsigEvent> events) async {
@@ -25,23 +48,21 @@ class NetworkService {
   }
 
   Future<Map?> _post(Uri url,
-      [Map? body = null, int retries = 0, int backoff = 1000]) async {
+      [Map? body = null, int retries = 0, int backoff = 1]) async {
     String data = json.encode(body);
     try {
-      var response = await http.post(url,
-          headers: {
-            "Content-Type": "application/json",
-            "STATSIG-SDK-TYPE": statsigMeta['sdkType'] ?? '',
-            "STATSIG-SDK-VERSION": statsigMeta['sdkVersion'] ?? ""
-          },
-          body: data);
-      return jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-    } catch (_) {
-      if (retries > 0) {
-        await Future.delayed(Duration(milliseconds: backoff));
+      var response = await http.post(url, headers: _headers, body: data);
+
+      if (response.statusCode == 200) {
+        return response.bodyBytes.length == 0
+            ? {}
+            : jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+      } else if (retryCodes.containsKey(response.statusCode) && retries > 0) {
+        await Future.delayed(Duration(seconds: backoff));
         return await _post(url, body, retries - 1, backoff * 2);
       }
-      return null;
-    }
+    } catch (_) {}
+
+    return null;
   }
 }

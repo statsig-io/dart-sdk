@@ -24,7 +24,7 @@ class StatsigClient {
       [StatsigUser? user = null, StatsigOptions? options = null]) {
     this._user = user ?? StatsigUser();
     this._options = options ?? StatsigOptions();
-    this._network = NetworkService(this._options);
+    this._network = NetworkService(this._options, this._sdkKey);
     this._logger = StatsigLogger(_network);
     this._store = InternalStore();
   }
