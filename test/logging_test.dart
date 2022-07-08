@@ -26,7 +26,7 @@ void main() {
     Completer<bool>? completer;
 
     setUp(() async {
-      final interceptor = nock('https://api.statsig.com')
+      final interceptor = nock('https://statsigapi.net')
           .post('/v1/initialize', (body) => true)
         ..reply(200, TestData.initializeResponse);
       await Statsig.initialize('a-key');
@@ -34,7 +34,7 @@ void main() {
       expect(interceptor.isDone, true);
 
       completer = new Completer();
-      loggingStub = nock('https://api.statsig.com').post('/v1/rgstr', (body) {
+      loggingStub = nock('https://statsigapi.net').post('/v1/rgstr', (body) {
         logs = jsonDecode(utf8.decode(body)) as Map;
         return true;
       })

@@ -1,5 +1,4 @@
 import 'package:nock/nock.dart';
-import 'package:statsig/src/utils.dart';
 import 'package:statsig/statsig.dart';
 import 'package:test/test.dart';
 
@@ -17,7 +16,7 @@ void main() {
 
   group('Statsig when Initialized', () {
     setUp(() async {
-      final interceptor = nock('https://api.statsig.com')
+      final interceptor = nock('https://statsigapi.net')
           .post('/v1/initialize', (body) => true)
         ..reply(200, TestData.initializeResponse);
       await Statsig.initialize('a-key');
