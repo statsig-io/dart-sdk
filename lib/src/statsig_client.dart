@@ -1,5 +1,6 @@
 import 'dart:convert';
 import "package:crypto/crypto.dart";
+import 'package:statsig/src/internal_store.dart';
 
 import 'package:statsig/src/network_service.dart';
 import 'package:statsig/src/statsig_layer.dart';
@@ -17,8 +18,7 @@ class StatsigClient {
   late StatsigOptions _options;
   late NetworkService _network;
   late StatsigLogger _logger;
-
-  Map _store = new Map();
+  late InternalStore _store;
 
   StatsigClient(this._sdkKey,
       [StatsigUser? user = null, StatsigOptions? options = null]) {
@@ -26,11 +26,16 @@ class StatsigClient {
     this._options = options ?? StatsigOptions();
     this._network = NetworkService(this._options);
     this._logger = StatsigLogger(_network);
+    this._store = InternalStore();
   }
 
   Future<void> fetchInitialValues() async {
     var res = await _network.initialize(this._user);
-    _store = res;
+    if (res is Map) {
+      _store.save(this._user, res);
+    } else {
+      await _store.load(this._user);
+    }
   }
 
   Future shutdown() async {
@@ -38,15 +43,15 @@ class StatsigClient {
   }
 
   Future updateUser(StatsigUser user) async {
-    _store = {};
+    await _store.clear();
     _user = user;
 
     await fetchInitialValues();
   }
 
-  bool? checkGate(String gateName, [bool defaultValue = false]) {
+  bool checkGate(String gateName, [bool defaultValue = false]) {
     var hash = _getHash(gateName);
-    var res = _store["feature_gates"]?[hash];
+    var res = _store.featureGates[hash];
     if (res == null) {
       return defaultValue;
     }
@@ -57,11 +62,11 @@ class StatsigClient {
     return res["value"];
   }
 
-  DynamicConfig? getConfig(String configName) {
+  DynamicConfig getConfig(String configName) {
     var hash = _getHash(configName);
-    Map? res = _store["dynamic_configs"]?[hash];
+    Map? res = _store.dynamicConfigs[hash];
     if (res == null) {
-      return DynamicConfig(configName, null);
+      return DynamicConfig.empty(configName);
     }
 
     _logger.enqueue(StatsigEvent.createConfigExposure(
@@ -70,11 +75,11 @@ class StatsigClient {
     return DynamicConfig(configName, res["value"]);
   }
 
-  Layer? getLayer(String layerName) {
+  Layer getLayer(String layerName) {
     var hash = _getHash(layerName);
-    Map? res = _store["layer_configs"]?[hash];
+    Map? res = _store.layerConfigs[hash];
     if (res == null) {
-      return Layer(layerName);
+      return Layer.empty(layerName);
     }
 
     String ruleId = res["rule_id"];

@@ -14,6 +14,10 @@ class Layer {
     }
     return _value[key] ?? defaultValue;
   }
+
+  static empty(String name) {
+    return Layer(name);
+  }
 }
 
 noop(a, b) {}

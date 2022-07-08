@@ -29,16 +29,18 @@ class Statsig {
     return _clientInstance?.checkGate(gateName, defaultValue) ?? defaultValue;
   }
 
-  static DynamicConfig? getConfig(String configName) {
-    return _clientInstance?.getConfig(configName);
+  static DynamicConfig getConfig(String configName) {
+    return _clientInstance?.getConfig(configName) ??
+        DynamicConfig.empty(configName);
   }
 
-  static DynamicConfig? getExperiment(String configName) {
-    return _clientInstance?.getConfig(configName);
+  static DynamicConfig getExperiment(String configName) {
+    return _clientInstance?.getConfig(configName) ??
+        DynamicConfig.empty(configName);
   }
 
-  static Layer? getLayer(String layerName) {
-    return _clientInstance?.getLayer(layerName);
+  static Layer getLayer(String layerName) {
+    return _clientInstance?.getLayer(layerName) ?? Layer.empty(layerName);
   }
 
   static void logEvent(String eventName,

@@ -4,8 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:statsig/src/statsig_event.dart';
 import 'package:statsig/statsig.dart';
 
-const key = 'client-vklyTVG7MNvuUw2hhGYPYu8ZdlzD1yGsnwGuafbGiuQ';
-const defaultHost = 'https://api.statsig.com/v1';
+const defaultHost = 'https://statsigapi.net/v1';
 const statsigMeta = {"sdkType": "dart", "sdkVersion": "1.0.0"};
 
 class NetworkService {
@@ -15,16 +14,9 @@ class NetworkService {
     _host = options.api ?? defaultHost;
   }
 
-  Future<Map> initialize(StatsigUser user) async {
+  Future<Map?> initialize(StatsigUser user) async {
     var url = Uri.parse(_host + '/initialize');
-    var response =
-        await _post(url, {"user": user, "statsigMetadata": statsigMeta});
-
-    try {
-      return jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-    } catch (_) {
-      return {};
-    }
+    return await _post(url, {"user": user, "statsigMetadata": statsigMeta}, 3);
   }
 
   Future<void> sendEvents(List<StatsigEvent> events) async {
@@ -32,9 +24,24 @@ class NetworkService {
     await _post(url, {'events': events, 'statsigMetadata': statsigMeta});
   }
 
-  Future<http.Response> _post(Uri url, [Map? body = null]) async {
+  Future<Map?> _post(Uri url,
+      [Map? body = null, int retries = 0, int backoff = 1000]) async {
     String data = json.encode(body);
-    return await http.post(url,
-        headers: {"content-type": "application/json"}, body: data);
+    try {
+      var response = await http.post(url,
+          headers: {
+            "Content-Type": "application/json",
+            "STATSIG-SDK-TYPE": statsigMeta['sdkType'] ?? '',
+            "STATSIG-SDK-VERSION": statsigMeta['sdkVersion'] ?? ""
+          },
+          body: data);
+      return jsonDecode(utf8.decode(response.bodyBytes)) as Map;
+    } catch (_) {
+      if (retries > 0) {
+        await Future.delayed(Duration(milliseconds: backoff));
+        return await _post(url, body, retries - 1, backoff * 2);
+      }
+      return null;
+    }
   }
 }
