@@ -13,7 +13,16 @@ class StatsigEvent {
       {this.metadata = null,
       this.exposures = null,
       this.stringValue = null,
-      this.doubleValue = null}) {}
+      this.doubleValue = null});
+
+  StatsigEvent.fromJson(Map<String, dynamic> json)
+      : eventName = json["eventName"],
+        user = StatsigUser.fromJson(json["user"]),
+        time = json["time"],
+        exposures = json["secondaryExposures"],
+        metadata = json["metadata"],
+        doubleValue = json["value"] is String ? null : json["value"],
+        stringValue = json["value"] is String ? json["value"] : null;
 
   Map toJson() {
     var result = {"eventName": eventName, "user": user, "time": time};

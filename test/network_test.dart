@@ -16,7 +16,7 @@ void main() {
   });
 
   group('Network Service', () {
-    test('should pass', () async {
+    test('fetching values from the network', () async {
       final interceptor = nock('https://statsigapi.net')
           .post('/v1/initialize', (body) => true)
         ..reply(200,

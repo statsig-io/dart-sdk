@@ -2,10 +2,11 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:statsig/src/statsig_event.dart';
+import 'package:statsig/src/statsig_metadata.dart';
 import 'package:statsig/statsig.dart';
+import 'package:meta/meta.dart';
 
 const defaultHost = 'https://statsigapi.net/v1';
-const statsigMeta = {"sdkType": "dart", "sdkVersion": "1.0.0"};
 
 const retryCodes = {
   408: true,
@@ -28,23 +29,32 @@ class NetworkService {
     _headers = {
       "Content-Type": "application/json",
       "STATSIG-API-KEY": sdkKey,
-      "STATSIG-SDK-TYPE": statsigMeta['sdkType'] ?? '',
-      "STATSIG-SDK-VERSION": statsigMeta['sdkVersion'] ?? ""
+      "STATSIG-SDK-TYPE": StatsigMetadata.getSDKType(),
+      "STATSIG-SDK-VERSION": StatsigMetadata.getSDKVersion()
     };
   }
 
   Future<Map?> initialize(StatsigUser user) async {
     var url = Uri.parse(_host + '/initialize');
-    return await _post(url, {"user": user, "statsigMetadata": statsigMeta}, 3)
+    return await _post(
+            url,
+            {"user": user, "statsigMetadata": StatsigMetadata.toJson()},
+            3,
+            initialBackoffSeconds)
         .timeout(Duration(seconds: _options.initTimeout), onTimeout: () {
       print("[Statsig]: Initialize timed out.");
       return null;
     });
   }
 
-  Future<void> sendEvents(List<StatsigEvent> events) async {
+  Future<bool> sendEvents(List<StatsigEvent> events) async {
     var url = Uri.parse(_host + '/rgstr');
-    await _post(url, {'events': events, 'statsigMetadata': statsigMeta});
+    var result = await _post(
+        url,
+        {'events': events, 'statsigMetadata': StatsigMetadata.toJson()},
+        2,
+        initialBackoffSeconds);
+    return result?['success'] ?? false;
   }
 
   Future<Map?> _post(Uri url,
@@ -65,4 +75,7 @@ class NetworkService {
 
     return null;
   }
+
+  @visibleForTesting
+  static int initialBackoffSeconds = 1;
 }

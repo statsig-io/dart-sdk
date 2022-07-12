@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:statsig/src/disk_util.dart';
 import 'package:statsig/statsig.dart';
 
 class InternalStore {
@@ -35,26 +35,12 @@ class InternalStore {
 
   Future<void> _write(StatsigUser user, String content) async {
     var userId = user.userId.length > 0 ? user.userId : "STATSIG_NULL_USER";
-    var dir = await Directory.systemTemp.create();
-    var file = File("${dir.path}/${userId}.statsig_store");
-    await file.writeAsString(content);
+    await DiskUtil.write("${userId}.statsig_store", content);
   }
 
   Future<Map?> _read(StatsigUser user) async {
     var userId = user.userId.length > 0 ? user.userId : "STATSIG_NULL_USER";
-    var exists = await Directory.systemTemp.exists();
-    if (!exists) {
-      return null;
-    }
-
-    var dir = await Directory.systemTemp;
-    var file = File("${dir.path}/${userId}.statsig_store");
-
-    if (!(await file.exists())) {
-      return null;
-    }
-
-    var content = await file.readAsString();
+    var content = await DiskUtil.read("${userId}.statsig_store");
     var data = json.decode(content);
     return data is Map ? data : null;
   }
