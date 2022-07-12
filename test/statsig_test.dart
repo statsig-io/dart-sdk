@@ -40,24 +40,24 @@ void main() {
       test('returns config from network', () {
         var config = Statsig.getConfig("a_config");
 
-        expect(config?.name, "a_config");
-        expect(config?.get("a_string_value"), "foo");
-        expect(config?.get("a_bool_value"), true);
-        expect(config?.get("a_number_value"), 420);
+        expect(config.name, "a_config");
+        expect(config.get("a_string_value"), "foo");
+        expect(config.get("a_bool_value"), true);
+        expect(config.get("a_number_value"), 420);
       });
 
       test('returns and empty config by default', () {
         var config = Statsig.getConfig("no_config");
-        expect(config?.name, "no_config");
-        expect(config?.get("a_string_value"), null);
+        expect(config.name, "no_config");
+        expect(config.get("a_string_value"), null);
       });
 
       test('returns default values', () {
         var config = Statsig.getConfig("no_config");
-        expect(config?.name, "no_config");
-        expect(config?.get("a_string_value", "bar"), "bar");
-        expect(config?.get("a_bool_value", true), true);
-        expect(config?.get("a_number_value", 7), 7);
+        expect(config.name, "no_config");
+        expect(config.get("a_string_value", "bar"), "bar");
+        expect(config.get("a_bool_value", true), true);
+        expect(config.get("a_number_value", 7), 7);
       });
     });
   });

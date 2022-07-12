@@ -1,7 +1,6 @@
 @Timeout(Duration(seconds: 1))
 
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:convert';
 
 import 'package:nock/nock.dart';
