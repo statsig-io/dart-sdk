@@ -73,6 +73,6 @@ void main() {
       expect(event['eventName'], "statsig::config_exposure");
       expect(event['metadata'], {"config": "a_config", "ruleID": "a_rule_id"});
       expect((logs as Map)['statsigMetadata']['sdkType'], 'dart');
-    }, timeout: Timeout(Duration(seconds: 10)));
+    });
   });
 }
