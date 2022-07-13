@@ -1,5 +1,5 @@
 name: statsig
-description: A sample command-line application.
+description: Statsig SDK for Dart. Statsig enables developers to ship code faster and more safely.
 version: 0.1.0
 homepage: https://statsig.com
 
