@@ -1,5 +1,7 @@
 export 'src/statsig_options.dart' show StatsigOptions;
 export 'src/statsig_user.dart' show StatsigUser;
+export 'src/dynamic_config.dart' show DynamicConfig;
+export 'src/statsig_layer.dart' show Layer;
 
 import 'package:meta/meta.dart';
 import 'package:statsig/src/dynamic_config.dart';
