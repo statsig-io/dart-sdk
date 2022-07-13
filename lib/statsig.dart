@@ -21,6 +21,7 @@ class Statsig {
 
   static Future shutdown() async {
     await _clientInstance?.shutdown();
+    _clientInstance = null;
   }
 
   static Future updateUser(StatsigUser user) async {

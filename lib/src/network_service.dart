@@ -38,7 +38,10 @@ class NetworkService {
     var url = Uri.parse(_host + '/initialize');
     return await _post(
             url,
-            {"user": user, "statsigMetadata": StatsigMetadata.toJson()},
+            {
+              "user": user.toPrivacySensitiveJson(),
+              "statsigMetadata": StatsigMetadata.toJson()
+            },
             3,
             initialBackoffSeconds)
         .timeout(Duration(seconds: _options.initTimeout), onTimeout: () {

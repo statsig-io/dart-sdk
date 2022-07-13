@@ -28,7 +28,8 @@ void main() {
       final interceptor = nock('https://statsigapi.net')
           .post('/v1/initialize', (body) => true)
         ..reply(200, TestData.initializeResponse);
-      await Statsig.initialize('a-key');
+      await Statsig.initialize('a-key',
+          StatsigUser(userId: "a-user", privateAttributes: {"secret": "shh"}));
 
       expect(interceptor.isDone, true);
 
@@ -40,6 +41,28 @@ void main() {
         ..reply(200, '{}')
         ..onReply(() => completer?.complete(true));
       logs = null;
+    });
+
+    group("User Object", () {
+      test('does not log private attributes', () async {
+        Statsig.checkGate('a_gate');
+        Statsig.shutdown();
+        await completer?.future;
+
+        expect(loggingStub?.isDone, true);
+
+        var event = (logs as Map)['events'][0] as Map;
+        expect(event['user'], {
+          'userID': 'a-user',
+          'email': null,
+          'ip': null,
+          'country': null,
+          'locale': null,
+          'appVersion': null,
+          'custom': null,
+          'customIDs': null
+        });
+      });
     });
 
     group("Feature Gates", () {
