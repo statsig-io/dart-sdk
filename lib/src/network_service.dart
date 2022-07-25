@@ -66,7 +66,7 @@ class NetworkService {
     try {
       var response = await http.post(url, headers: _headers, body: data);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode <= 299) {
         return response.bodyBytes.length == 0
             ? {}
             : jsonDecode(utf8.decode(response.bodyBytes)) as Map;
