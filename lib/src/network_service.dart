@@ -20,7 +20,7 @@ const retryCodes = {
 };
 
 class NetworkService {
-  StatsigOptions _options;
+  final StatsigOptions _options;
   late String _host;
   late Map<String, String> _headers;
 
@@ -61,13 +61,13 @@ class NetworkService {
   }
 
   Future<Map?> _post(Uri url,
-      [Map? body = null, int retries = 0, int backoff = 1]) async {
+      [Map? body, int retries = 0, int backoff = 1]) async {
     String data = json.encode(body);
     try {
       var response = await http.post(url, headers: _headers, body: data);
 
       if (response.statusCode >= 200 && response.statusCode <= 299) {
-        return response.bodyBytes.length == 0
+        return response.bodyBytes.isEmpty
             ? {}
             : jsonDecode(utf8.decode(response.bodyBytes)) as Map;
       } else if (retryCodes.containsKey(response.statusCode) && retries > 0) {

@@ -6,7 +6,7 @@ import 'package:statsig/statsig.dart';
 import 'package:test/test.dart';
 
 void main() {
-  NetworkService? networkService = null;
+  NetworkService? networkService;
 
   setUpAll(() {
     nock.init();
@@ -37,13 +37,12 @@ void main() {
     });
 
     test('includes private attributes from the user', () async {
-      var requestBody;
+      Map requestBody = {};
       nock('https://statsigapi.net').post('/v1/initialize', (body) {
         requestBody = jsonDecode(utf8.decode(body)) as Map;
         return true;
-      })
-        ..reply(200,
-            '{"feature_gates": {}, "dynamic_configs": {}, "layer_configs": {}, "has_updates": true, "time": 1621637839}');
+      }).reply(200,
+          '{"feature_gates": {}, "dynamic_configs": {}, "layer_configs": {}, "has_updates": true, "time": 1621637839}');
 
       await networkService?.initialize(
           StatsigUser(userId: "a_user", privateAttributes: {"a": "b"}));

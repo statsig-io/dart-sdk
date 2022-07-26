@@ -11,14 +11,14 @@ class StatsigUser {
 
   StatsigUser(
       {this.userId = "",
-      this.email = null,
-      this.ip = null,
-      this.country = null,
-      this.locale = null,
-      this.appVersion = null,
-      this.custom = null,
-      this.customIds = null,
-      this.privateAttributes = null});
+      this.email,
+      this.ip,
+      this.country,
+      this.locale,
+      this.appVersion,
+      this.custom,
+      this.customIds,
+      this.privateAttributes});
 
   StatsigUser.fromJson(Map<String, dynamic> json)
       : userId = json["userID"],

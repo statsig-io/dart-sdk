@@ -7,7 +7,7 @@ abstract class DiskUtil {
       await dir.create();
     }
 
-    var file = File("${dir.path}/${filename}");
+    var file = File("${dir.path}/$filename");
     await file.writeAsString(contents);
   }
 
@@ -16,7 +16,7 @@ abstract class DiskUtil {
     var result = '';
     try {
       var dir = _getTempDir();
-      var file = File("${dir.path}/${filename}");
+      var file = File("${dir.path}/$filename");
       result = await file.readAsString();
       if (destroyAfterReading) {
         await file.delete();
