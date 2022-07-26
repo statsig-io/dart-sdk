@@ -1,12 +1,34 @@
 class StatsigUser {
+  /// A unique identifier for the user.
   String userId;
+
+  /// An email associated with the current user.
   String? email;
+
+  /// The ip address of the requests for the user.
   String? ip;
+
+  /// The country location of the user
   String? country;
+
+  /// The locale for the user
   String? locale;
+
+  /// The current version of the app
   String? appVersion;
+
+  /// Any additional custom user attributes for custom conditions in the console
+  ///
+  /// NOTE: values other than String, Double, Boolean, Array<String>
+  ///       will be dropped from the map
   Map<String, dynamic>? custom;
+
+  /// The custom identifiers associated with this user.
+  ///
+  /// The Key of each entry is the identifiers name and the Value is the identifiers value.
   Map<String, String>? customIds;
+
+  /// Any user attributes that should be used in evaluation only and removed in any logs.
   Map<String, dynamic>? privateAttributes;
 
   StatsigUser(
