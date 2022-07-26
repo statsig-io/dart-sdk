@@ -1,6 +1,6 @@
 abstract class StatsigMetadata {
   static String getSDKVersion() {
-    return "0.1.1";
+    return "0.1.2";
   }
 
   static String getSDKType() {
