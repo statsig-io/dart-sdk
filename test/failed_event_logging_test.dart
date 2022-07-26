@@ -1,4 +1,4 @@
-@Timeout(Duration(seconds: 1))
+@Timeout(Duration(seconds: 2))
 
 import 'dart:async';
 import 'dart:convert';
@@ -25,6 +25,8 @@ void main() {
     Completer<bool> completer = new Completer();
 
     setUp(() async {
+      await Statsig.shutdown();
+
       final interceptor =
           nock('https://statsigapi.net').post('/v1/initialize', (body) => true)
             ..persist()
@@ -44,7 +46,7 @@ void main() {
             ..persist()
             ..reply(500, "{}")
             ..onReply(() {
-              if (++calls >= 3) {
+              if (++calls >= 3 && !completer.isCompleted) {
                 completer.complete(true);
               }
             });
@@ -61,7 +63,7 @@ void main() {
         logs = jsonDecode(utf8.decode(body)) as Map;
         return true;
       })
-        ..reply(200, "{}")
+        ..reply(202, '{"success": true}')
         ..onReply(() {
           completer.complete(true);
         });

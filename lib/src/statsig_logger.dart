@@ -15,14 +15,14 @@ class StatsigLogger {
   List<StatsigEvent> _queue = [];
   int _flushBatchSize = 50;
 
-  late StreamSubscription _flushSubscription;
+  late Timer _flushTimer;
 
   StatsigLogger(this._network) {
     _loadFailedLogs();
-    _flushSubscription =
-        Future.delayed(Duration(milliseconds: loggingIntervalMillis))
-            .asStream()
-            .listen((event) => _flush());
+    _flushTimer =
+        Timer.periodic(Duration(milliseconds: loggingIntervalMillis), (_) {
+      _flush();
+    });
   }
 
   void enqueue(StatsigEvent event) {
@@ -34,7 +34,7 @@ class StatsigLogger {
   }
 
   Future shutdown() async {
-    _flushSubscription.cancel();
+    _flushTimer.cancel();
     await _flush(true);
   }
 
