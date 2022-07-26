@@ -11,7 +11,7 @@ const loggingIntervalMillis = 10000;
 const failedEventsFilename = "failed_events.json";
 
 class StatsigLogger {
-  NetworkService _network;
+  final NetworkService _network;
   List<StatsigEvent> _queue = [];
   int _flushBatchSize = 50;
 
@@ -39,7 +39,7 @@ class StatsigLogger {
   }
 
   Future _flush([bool isShuttingDown = false]) async {
-    if (_queue.length == 0) {
+    if (_queue.isEmpty) {
       return;
     }
 
@@ -67,12 +67,12 @@ class StatsigLogger {
 
     var events = json.decode(contents);
     if (events is List) {
-      events.forEach((element) {
+      for (var element in events) {
         _queue.add(StatsigEvent.fromJson(element));
-      });
+      }
     }
 
-    if (_queue.length > 0) {
+    if (_queue.isNotEmpty) {
       _flush();
     }
   }

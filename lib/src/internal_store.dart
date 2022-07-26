@@ -34,14 +34,14 @@ class InternalStore {
   }
 
   Future<void> _write(StatsigUser user, String content) async {
-    var userId = user.userId.length > 0 ? user.userId : "STATSIG_NULL_USER";
-    await DiskUtil.write("${userId}.statsig_store", content);
+    var userId = user.userId.isNotEmpty ? user.userId : "STATSIG_NULL_USER";
+    await DiskUtil.write("$userId.statsig_store", content);
   }
 
   Future<Map?> _read(StatsigUser user) async {
     try {
-      var userId = user.userId.length > 0 ? user.userId : "STATSIG_NULL_USER";
-      var content = await DiskUtil.read("${userId}.statsig_store");
+      var userId = user.userId.isNotEmpty ? user.userId : "STATSIG_NULL_USER";
+      var content = await DiskUtil.read("$userId.statsig_store");
       var data = json.decode(content);
       return data is Map ? data : null;
     } catch (_) {}

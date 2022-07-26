@@ -10,10 +10,7 @@ class StatsigEvent {
   double? doubleValue;
 
   StatsigEvent._make(this.user, this.eventName,
-      {this.metadata = null,
-      this.exposures = null,
-      this.stringValue = null,
-      this.doubleValue = null});
+      {this.metadata, this.exposures, this.stringValue, this.doubleValue});
 
   StatsigEvent.fromJson(Map<String, dynamic> json)
       : eventName = json["eventName"],

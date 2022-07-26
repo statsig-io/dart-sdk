@@ -1,5 +1,5 @@
 class StatsigOptions {
   String? api;
   int initTimeout;
-  StatsigOptions([this.api = null, this.initTimeout = 3]);
+  StatsigOptions([this.api, this.initTimeout = 3]);
 }

@@ -1,10 +1,10 @@
 class Layer {
   final String name;
 
-  Map _value;
-  Function(Layer, String) _onParamExposure;
+  final Map _value;
+  final Function(Layer, String) _onParamExposure;
 
-  Layer(this.name, [this._value = const {}, this._onParamExposure = noop]) {}
+  Layer(this.name, [this._value = const {}, this._onParamExposure = noop]);
 
   T? get<T>(String key, [T? defaultValue]) {
     var result = _value[key];
