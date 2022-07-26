@@ -2,10 +2,10 @@ class Layer {
   /// The name of this Layer.
   final String name;
 
-  Map _value;
-  Function(Layer, String) _onParamExposure;
+  final Map _value;
+  final Function(Layer, String) _onParamExposure;
 
-  Layer(this.name, [this._value = const {}, this._onParamExposure = noop]) {}
+  Layer(this.name, [this._value = const {}, this._onParamExposure = noop]);
 
   /// Gets a value from the Layer
   ///

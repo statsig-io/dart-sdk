@@ -22,7 +22,7 @@ void main() {
 
   group('Failed Event Logging', () {
     Map? logs;
-    Completer<bool> completer = new Completer();
+    Completer<bool> completer = Completer();
 
     setUp(() async {
       await Statsig.shutdown();
@@ -35,7 +35,7 @@ void main() {
 
       expect(interceptor.isDone, true);
 
-      completer = new Completer();
+      completer = Completer();
       logs = null;
     });
 
@@ -56,7 +56,7 @@ void main() {
       await Statsig.shutdown();
 
       await completer.future;
-      completer = new Completer();
+      completer = Completer();
       badLogsInterceptor.cancel();
 
       nock('https://statsigapi.net').post('/v1/rgstr', (body) {

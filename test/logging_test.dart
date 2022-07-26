@@ -33,7 +33,7 @@ void main() {
 
       expect(interceptor.isDone, true);
 
-      completer = new Completer();
+      completer = Completer();
       loggingStub = nock('https://statsigapi.net').post('/v1/rgstr', (body) {
         logs = jsonDecode(utf8.decode(body)) as Map;
         return true;

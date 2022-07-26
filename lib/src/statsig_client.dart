@@ -12,7 +12,7 @@ import 'package:statsig/src/statsig_event.dart';
 import 'dynamic_config.dart';
 
 class StatsigClient {
-  String _sdkKey;
+  final String _sdkKey;
 
   late StatsigUser _user;
   late StatsigOptions _options;
@@ -20,21 +20,20 @@ class StatsigClient {
   late StatsigLogger _logger;
   late InternalStore _store;
 
-  StatsigClient(this._sdkKey,
-      [StatsigUser? user = null, StatsigOptions? options = null]) {
-    this._user = user ?? StatsigUser();
-    this._options = options ?? StatsigOptions();
-    this._network = NetworkService(this._options, this._sdkKey);
-    this._logger = StatsigLogger(_network);
-    this._store = InternalStore();
+  StatsigClient(this._sdkKey, [StatsigUser? user, StatsigOptions? options]) {
+    _user = user ?? StatsigUser();
+    _options = options ?? StatsigOptions();
+    _network = NetworkService(_options, _sdkKey);
+    _logger = StatsigLogger(_network);
+    _store = InternalStore();
   }
 
   Future<void> fetchInitialValues() async {
-    var res = await _network.initialize(this._user);
+    var res = await _network.initialize(_user);
     if (res is Map) {
-      _store.save(this._user, res);
+      _store.save(_user, res);
     } else {
-      await _store.load(this._user);
+      await _store.load(_user);
     }
   }
 
@@ -84,7 +83,7 @@ class StatsigClient {
 
     String ruleId = res["rule_id"];
 
-    Function(Layer, String) onExposure = (layer, parameterName) {
+    onExposure(Layer layer, String parameterName) {
       var allocatedExperiment = "";
       bool isExplicit =
           (res["explicit_parameters"] ?? []).contains(parameterName);
@@ -97,15 +96,15 @@ class StatsigClient {
 
       _logger.enqueue(StatsigEvent.createLayerExposure(_user, layerName, ruleId,
           allocatedExperiment, parameterName, isExplicit, exposures));
-    };
+    }
 
     return Layer(layerName, res["value"], onExposure);
   }
 
   void logEvent(String eventName,
-      {String? stringValue = null,
-      double? doubleValue = null,
-      Map<String, String>? metadata = null}) {
+      {String? stringValue,
+      double? doubleValue,
+      Map<String, String>? metadata}) {
     _logger.enqueue(StatsigEvent.createCustomEvent(
         _user, eventName, stringValue, doubleValue, metadata));
     return;
