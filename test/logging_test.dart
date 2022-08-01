@@ -83,7 +83,7 @@ void main() {
         expect(event['eventName'], "statsig::gate_exposure");
         expect(event['metadata'],
             {"gate": "a_gate", "gateValue": "true", "ruleID": "a_rule_id"});
-        expect((logs as Map)['statsigMetadata']['sdkType'], 'dart');
+        expect((logs as Map)['statsigMetadata']['sdkType'], 'dart-client');
       });
     });
 
@@ -105,7 +105,7 @@ void main() {
         expect(event['eventName'], "statsig::config_exposure");
         expect(
             event['metadata'], {"config": "a_config", "ruleID": "a_rule_id"});
-        expect((logs as Map)['statsigMetadata']['sdkType'], 'dart');
+        expect((logs as Map)['statsigMetadata']['sdkType'], 'dart-client');
       });
     });
   });

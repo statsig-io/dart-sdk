@@ -74,7 +74,7 @@ void main() {
       var event = (logs as Map)['events'][0] as Map;
       expect(event['eventName'], "statsig::config_exposure");
       expect(event['metadata'], {"config": "a_config", "ruleID": "a_rule_id"});
-      expect((logs as Map)['statsigMetadata']['sdkType'], 'dart');
+      expect((logs as Map)['statsigMetadata']['sdkType'], 'dart-client');
     });
   });
 }

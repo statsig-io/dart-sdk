@@ -5,6 +5,7 @@ import 'package:statsig/src/internal_store.dart';
 import 'package:statsig/src/network_service.dart';
 import 'package:statsig/src/statsig_layer.dart';
 import 'package:statsig/src/statsig_logger.dart';
+import 'package:statsig/src/statsig_metadata.dart';
 import 'package:statsig/src/statsig_options.dart';
 import 'package:statsig/src/statsig_user.dart';
 import 'package:statsig/src/statsig_event.dart';
@@ -20,7 +21,8 @@ class StatsigClient {
   late StatsigLogger _logger;
   late InternalStore _store;
 
-  StatsigClient(this._sdkKey, [StatsigUser? user, StatsigOptions? options]) {
+  StatsigClient._make(this._sdkKey,
+      [StatsigUser? user, StatsigOptions? options]) {
     _user = user ?? StatsigUser();
     _options = options ?? StatsigOptions();
     _network = NetworkService(_options, _sdkKey);
@@ -28,13 +30,12 @@ class StatsigClient {
     _store = InternalStore();
   }
 
-  Future<void> fetchInitialValues() async {
-    var res = await _network.initialize(_user);
-    if (res is Map) {
-      _store.save(_user, res);
-    } else {
-      await _store.load(_user);
-    }
+  static Future<StatsigClient> make(String sdkKey,
+      [StatsigUser? user, StatsigOptions? options]) async {
+    var client = StatsigClient._make(sdkKey, user, options);
+    await StatsigMetadata.loadStableID();
+    await client._fetchInitialValues();
+    return client;
   }
 
   Future shutdown() async {
@@ -44,8 +45,9 @@ class StatsigClient {
   Future updateUser(StatsigUser user) async {
     await _store.clear();
     _user = user;
+    StatsigMetadata.regenSessionID();
 
-    await fetchInitialValues();
+    await _fetchInitialValues();
   }
 
   bool checkGate(String gateName, [bool defaultValue = false]) {
@@ -108,6 +110,15 @@ class StatsigClient {
     _logger.enqueue(StatsigEvent.createCustomEvent(
         _user, eventName, stringValue, doubleValue, metadata));
     return;
+  }
+
+  Future<void> _fetchInitialValues() async {
+    var res = await _network.initialize(_user);
+    if (res is Map) {
+      _store.save(_user, res);
+    } else {
+      await _store.load(_user);
+    }
   }
 
   String _getHash(String input) {
