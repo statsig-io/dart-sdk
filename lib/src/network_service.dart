@@ -1,9 +1,10 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:statsig/src/statsig_event.dart';
-import 'package:statsig/src/statsig_metadata.dart';
-import 'package:statsig/statsig.dart';
+import 'statsig_event.dart';
+import 'statsig_metadata.dart';
+import 'statsig_options.dart';
+import 'statsig_user.dart';
 import 'package:meta/meta.dart';
 
 const defaultHost = 'https://statsigapi.net/v1';

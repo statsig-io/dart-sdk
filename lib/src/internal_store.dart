@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:statsig/src/disk_util.dart';
-import 'package:statsig/statsig.dart';
+import 'disk_util.dart';
+import 'statsig_user.dart';
 
 class InternalStore {
   Map featureGates = {};

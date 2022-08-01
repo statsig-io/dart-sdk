@@ -1,4 +1,4 @@
-import 'package:statsig/src/statsig_user.dart';
+import 'statsig_user.dart';
 
 class StatsigEvent {
   String eventName;

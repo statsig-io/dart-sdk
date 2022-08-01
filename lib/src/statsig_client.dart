@@ -1,15 +1,14 @@
 import 'dart:convert';
 import "package:crypto/crypto.dart";
-import 'package:statsig/src/internal_store.dart';
 
-import 'package:statsig/src/network_service.dart';
-import 'package:statsig/src/statsig_layer.dart';
-import 'package:statsig/src/statsig_logger.dart';
-import 'package:statsig/src/statsig_metadata.dart';
-import 'package:statsig/src/statsig_options.dart';
-import 'package:statsig/src/statsig_user.dart';
-import 'package:statsig/src/statsig_event.dart';
-
+import 'internal_store.dart';
+import 'network_service.dart';
+import 'statsig_layer.dart';
+import 'statsig_logger.dart';
+import 'statsig_metadata.dart';
+import 'statsig_options.dart';
+import 'statsig_user.dart';
+import 'statsig_event.dart';
 import 'dynamic_config.dart';
 
 class StatsigClient {

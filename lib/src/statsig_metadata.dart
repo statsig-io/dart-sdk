@@ -1,5 +1,5 @@
-import 'package:statsig/src/disk_util.dart';
 import 'package:uuid/uuid.dart';
+import 'disk_util.dart';
 
 abstract class StatsigMetadata {
   static String getSDKVersion() {

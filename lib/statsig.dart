@@ -4,11 +4,11 @@ export 'src/dynamic_config.dart' show DynamicConfig;
 export 'src/statsig_layer.dart' show Layer;
 
 import 'package:meta/meta.dart';
-import 'package:statsig/src/dynamic_config.dart';
-import 'package:statsig/src/statsig_client.dart';
-import 'package:statsig/src/statsig_layer.dart';
-import 'package:statsig/src/statsig_options.dart';
-import 'package:statsig/src/statsig_user.dart';
+import 'src/dynamic_config.dart';
+import 'src/statsig_client.dart';
+import 'src/statsig_layer.dart';
+import 'src/statsig_options.dart';
+import 'src/statsig_user.dart';
 
 /// The main interface to interact with the Statsig SDK
 class Statsig {

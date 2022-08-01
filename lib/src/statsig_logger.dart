@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:statsig/src/disk_util.dart';
-import 'package:statsig/src/network_service.dart';
-import 'package:statsig/src/statsig_event.dart';
+import 'disk_util.dart';
+import 'network_service.dart';
+import 'statsig_event.dart';
 
 const maxQueueLength = 1000;
 const loggingIntervalMillis = 10000;
