@@ -19,8 +19,8 @@ class Statsig {
   /// Optionally provide [StatsigUser] and/or [StatsigOptions] to configure the SDK.
   static Future<void> initialize(String sdkKey,
       [StatsigUser? user, StatsigOptions? options]) async {
-    _clientInstance = StatsigClient(sdkKey, user, options ?? StatsigOptions());
-    return _clientInstance?.fetchInitialValues();
+    _clientInstance =
+        await StatsigClient.make(sdkKey, user, options ?? StatsigOptions());
   }
 
   /// Closes out the SDK flushing any pending events.

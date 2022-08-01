@@ -1,13 +1,48 @@
+import 'package:statsig/src/disk_util.dart';
+import 'package:uuid/uuid.dart';
+
 abstract class StatsigMetadata {
   static String getSDKVersion() {
-    return "0.1.2";
+    return "0.2.0";
   }
 
   static String getSDKType() {
-    return "dart";
+    return "dart-client";
+  }
+
+  static String _sessionId = Uuid().v4();
+  static String getSessionID() {
+    return _sessionId;
+  }
+
+  static void regenSessionID() {
+    _sessionId = Uuid().v4();
+  }
+
+  static String _stableId = "";
+  static String getStableID() {
+    if (_stableId.isEmpty) {
+      throw Exception("Stable ID has not yet been loaded");
+    }
+    return _stableId;
+  }
+
+  static Future loadStableID() async {
+    const stableIdFilename = "statsig_stable_id";
+    _stableId = await DiskUtil.read(stableIdFilename);
+    if (_stableId.isEmpty) {
+      var id = Uuid().v4();
+      await DiskUtil.write(stableIdFilename, id);
+      _stableId = id;
+    }
   }
 
   static Map toJson() {
-    return {"sdkVersion": getSDKVersion(), "sdkType": getSDKType()};
+    return {
+      "sdkVersion": getSDKVersion(),
+      "sdkType": getSDKType(),
+      "sessionID": getSessionID(),
+      "stableID": getStableID()
+    };
   }
 }

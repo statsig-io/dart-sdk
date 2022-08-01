@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:nock/nock.dart';
 import 'package:statsig/src/network_service.dart';
+import 'package:statsig/src/statsig_metadata.dart';
 import 'package:statsig/statsig.dart';
 import 'package:test/test.dart';
 
@@ -12,8 +13,9 @@ void main() {
     nock.init();
   });
 
-  setUp(() {
+  setUp(() async {
     nock.cleanAll();
+    await StatsigMetadata.loadStableID();
     networkService = NetworkService(StatsigOptions(), "client-key");
   });
 
