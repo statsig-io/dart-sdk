@@ -1,11 +1,12 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
+
 import 'statsig_event.dart';
 import 'statsig_metadata.dart';
 import 'statsig_options.dart';
 import 'statsig_user.dart';
-import 'package:meta/meta.dart';
 
 const defaultHost = 'https://statsigapi.net/v1';
 
@@ -40,7 +41,8 @@ class NetworkService {
     return await _post(
             url,
             {
-              "user": user.toPrivacySensitiveJson(),
+              "user": user.toPrivacySensitiveJson()
+                ..addAll(_options.environment?.toJson() ?? {}),
               "statsigMetadata": StatsigMetadata.toJson()
             },
             3,
