@@ -17,21 +17,7 @@ enum StatsigEnvironment {
 }
 
 extension ToJson on StatsigEnvironment {
-  Map<String, dynamic> toJson() {
-    late final String environmentName;
-    switch (this) {
-      case StatsigEnvironment.development:
-        environmentName = 'development';
-        break;
-      case StatsigEnvironment.staging:
-        environmentName = 'staging';
-        break;
-      case StatsigEnvironment.production:
-        environmentName = 'production';
-        break;
-    }
-    return <String, dynamic>{
-      "statSigEnvironment": <String, String>{"tier": environmentName}
-    };
+  Map<String, dynamic> toJson() => <String, dynamic>{
+      "statsigEnvironment": <String, String>{"tier": this.toString().replaceAll("StatsigEnvironment.", "")};
   }
 }
