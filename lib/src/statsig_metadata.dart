@@ -3,7 +3,7 @@ import 'disk_util.dart';
 
 abstract class StatsigMetadata {
   static String getSDKVersion() {
-    return "0.3.0";
+    return "0.3.1";
   }
 
   static String getSDKType() {
