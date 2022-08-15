@@ -20,7 +20,15 @@ void main() {
     "customIDs": {"workID": "a_work_id"},
   };
   group('Statsig User', () {
-    test('converts to privacy sensitive JSON', () {
+    test('add environment', () {
+      var user = StatsigUser.fromJson({
+        "userID": "a-user",
+        "statsigEnvironment": {"tier": "staging"}
+      });
+      expect({"tier": "staging"}, user.toJson()["statsigEnvironment"]);
+    });
+
+    test('converts to JSON with private attributes', () {
       var user = StatsigUser(
           userId: userMap["userID"],
           email: userMap["email"],
@@ -32,7 +40,7 @@ void main() {
           customIds: userMap["customIDs"],
           privateAttributes: {"should_include": "this"});
 
-      var actual = json.encode(user.toPrivacySensitiveJson());
+      var actual = json.encode(user.toJsonWithPrivateAttributes());
       var expected = json.encode({
         ...userMap,
         ...{

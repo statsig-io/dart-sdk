@@ -11,6 +11,16 @@ import 'statsig_user.dart';
 import 'statsig_event.dart';
 import 'dynamic_config.dart';
 
+extension NormalizedStatsigUser on StatsigUser {
+  StatsigUser normalize(StatsigOptions? options) {
+    var json = this.toJsonWithPrivateAttributes();
+    if (options != null) {
+      json = json..addAll(options.environment?.toJson() ?? {});
+    }
+    return StatsigUser.fromJson(json);
+  }
+}
+
 class StatsigClient {
   final String _sdkKey;
 
@@ -31,7 +41,7 @@ class StatsigClient {
 
   static Future<StatsigClient> make(String sdkKey,
       [StatsigUser? user, StatsigOptions? options]) async {
-    var client = StatsigClient._make(sdkKey, user, options);
+    var client = StatsigClient._make(sdkKey, user?.normalize(options), options);
     await StatsigMetadata.loadStableID();
     await client._fetchInitialValues();
     return client;
@@ -43,7 +53,7 @@ class StatsigClient {
 
   Future updateUser(StatsigUser user) async {
     await _store.clear();
-    _user = user;
+    _user = user.normalize(this._options);
     StatsigMetadata.regenSessionID();
 
     await _fetchInitialValues();
