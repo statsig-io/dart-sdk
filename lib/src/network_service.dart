@@ -41,7 +41,7 @@ class NetworkService {
     return await _post(
             url,
             {
-              "user": user.toPrivacySensitiveJson(),
+              "user": user.toJsonWithPrivateAttributes(),
               "statsigMetadata": StatsigMetadata.toJson()
             },
             3,

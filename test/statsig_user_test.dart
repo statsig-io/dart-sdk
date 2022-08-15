@@ -28,7 +28,7 @@ void main() {
       expect({"tier": "staging"}, user.toJson()["statsigEnvironment"]);
     });
 
-    test('converts to privacy sensitive JSON', () {
+    test('converts to JSON with private attributes', () {
       var user = StatsigUser(
           userId: userMap["userID"],
           email: userMap["email"],
@@ -40,7 +40,7 @@ void main() {
           customIds: userMap["customIDs"],
           privateAttributes: {"should_include": "this"});
 
-      var actual = json.encode(user.toPrivacySensitiveJson());
+      var actual = json.encode(user.toJsonWithPrivateAttributes());
       var expected = json.encode({
         ...userMap,
         ...{

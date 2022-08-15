@@ -60,7 +60,7 @@ class StatsigUser {
 
   Map<String, dynamic> toJson() => _toJson();
 
-  Map<String, dynamic> toPrivacySensitiveJson() => _toJson(true);
+  Map<String, dynamic> toJsonWithPrivateAttributes() => _toJson(true);
 
   Map<String, dynamic> _toJson([bool includePrivateAttributes = false]) {
     return {

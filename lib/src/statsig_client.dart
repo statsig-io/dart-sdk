@@ -13,7 +13,7 @@ import 'dynamic_config.dart';
 
 extension NormalizedStatsigUser on StatsigUser {
   StatsigUser normalize(StatsigOptions? options) {
-    var json = this.toPrivacySensitiveJson();
+    var json = this.toJsonWithPrivateAttributes();
     if (options != null) {
       json = json..addAll(options.environment?.toJson() ?? {});
     }
