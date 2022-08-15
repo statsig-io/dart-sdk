@@ -20,6 +20,14 @@ void main() {
     "customIDs": {"workID": "a_work_id"},
   };
   group('Statsig User', () {
+    test('add environment', () {
+      var user = StatsigUser.fromJson({
+        "userID": "a-user",
+        "statsigEnvironment": {"tier": "staging"}
+      });
+      expect({"tier": "staging"}, user.toJson()["statsigEnvironment"]);
+    });
+
     test('converts to privacy sensitive JSON', () {
       var user = StatsigUser(
           userId: userMap["userID"],

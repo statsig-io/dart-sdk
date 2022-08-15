@@ -28,8 +28,10 @@ void main() {
       final interceptor = nock('https://statsigapi.net')
           .post('/v1/initialize', (body) => true)
         ..reply(200, TestData.initializeResponse);
-      await Statsig.initialize('a-key',
-          StatsigUser(userId: "a-user", privateAttributes: {"secret": "shh"}));
+      await Statsig.initialize(
+          'a-key',
+          StatsigUser(userId: "a-user", privateAttributes: {"secret": "shh"}),
+          StatsigOptions(environment: StatsigEnvironment.staging));
 
       expect(interceptor.isDone, true);
 
@@ -44,24 +46,27 @@ void main() {
     });
 
     group("User Object", () {
-      test('does not log private attributes', () async {
+      setUp(() async {
         Statsig.checkGate('a_gate');
         Statsig.shutdown();
         await completer?.future;
 
         expect(loggingStub?.isDone, true);
+      });
 
+      test('logs user id', () async {
         var event = (logs as Map)['events'][0] as Map;
-        expect(event['user'], {
-          'userID': 'a-user',
-          'email': null,
-          'ip': null,
-          'country': null,
-          'locale': null,
-          'appVersion': null,
-          'custom': null,
-          'customIDs': null
-        });
+        expect("a-user", event['user']['userID']);
+      });
+
+      test('does not log private attributes', () async {
+        var event = (logs as Map)['events'][0] as Map;
+        expect(null, event['user']['privateAttributes']);
+      });
+
+      test('pulls environment off options and adds it to user', () async {
+        var event = (logs as Map)['events'][0] as Map;
+        expect({"tier": "staging"}, event['user']['statsigEnvironment']);
       });
     });
 

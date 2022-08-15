@@ -1,3 +1,5 @@
+import './statsig_options.dart';
+
 class StatsigUser {
   /// A unique identifier for the user.
   String userId;
@@ -31,6 +33,8 @@ class StatsigUser {
   /// Any user attributes that should be used in evaluation only and removed in any logs.
   Map<String, dynamic>? privateAttributes;
 
+  Map<String, dynamic>? _statsigEnvironment;
+
   StatsigUser(
       {this.userId = "",
       this.email,
@@ -51,13 +55,14 @@ class StatsigUser {
         appVersion = json["appVersion"],
         custom = json["custom"],
         customIds = json["customIDs"],
-        privateAttributes = json["privateAttributes"];
+        privateAttributes = json["privateAttributes"],
+        _statsigEnvironment = json["statsigEnvironment"];
 
-  Map toJson() => _toJson();
+  Map<String, dynamic> toJson() => _toJson();
 
-  Map toPrivacySensitiveJson() => _toJson(true);
+  Map<String, dynamic> toPrivacySensitiveJson() => _toJson(true);
 
-  Map _toJson([bool includePrivateAttributes = false]) {
+  Map<String, dynamic> _toJson([bool includePrivateAttributes = false]) {
     return {
       "userID": userId,
       "email": email,
@@ -69,6 +74,9 @@ class StatsigUser {
       "customIDs": customIds,
       ...(includePrivateAttributes
           ? {"privateAttributes": privateAttributes}
+          : {}),
+      ...(_statsigEnvironment != null
+          ? {"statsigEnvironment": _statsigEnvironment}
           : {})
     };
   }
