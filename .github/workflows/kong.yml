@@ -1,0 +1,38 @@
+name: KONG
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0/4 * * *"
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  KONG:
+    timeout-minutes: 6
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get KONG
+        run: |
+          git clone https://${{ secrets.KONG_REPO_PAT }}@github.com/statsig-io/kong.git
+
+      - uses: dart-lang/setup-dart@v1.3
+
+      - name: Setup Dart Server
+        run: |
+          cd kong/bridges/dart-server
+          ./pull-and-build-sdk.sh $GITHUB_REPOSITORY $GITHUB_BASE_REF
+          dart pub get
+        env:
+          repo_pat: ${{ secrets.KONG_REPO_PAT }}
+
+      - name: Run Tests
+        run: |
+          cd kong
+          npm install
+          FORCE_COLOR=true npm run kong -- test dart
+        env:
+          test_api_key: ${{ secrets.KONG_SERVER_SDK_KEY }}
+          test_client_key: ${{ secrets.KONG_CLIENT_SDK_KEY }}
