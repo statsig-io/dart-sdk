@@ -23,7 +23,7 @@ jobs:
       - name: Setup Dart Server
         run: |
           cd kong/bridges/dart-server
-          ./pull-and-build-sdk.sh $GITHUB_REPOSITORY $GITHUB_BASE_REF
+          ./pull-and-build-sdk.sh $GITHUB_REPOSITORY $GITHUB_HEAD_REF
           dart pub get
         env:
           repo_pat: ${{ secrets.KONG_REPO_PAT }}
