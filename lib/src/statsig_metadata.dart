@@ -27,8 +27,15 @@ abstract class StatsigMetadata {
     return _stableId;
   }
 
-  static Future loadStableID() async {
+  static Future loadStableID([String? overrideStableID]) async {
     const stableIdFilename = "statsig_stable_id";
+
+    if (overrideStableID != null && overrideStableID.isNotEmpty) {
+      _stableId = overrideStableID;
+      DiskUtil.write(stableIdFilename, overrideStableID);
+      return;
+    }
+
     _stableId = await DiskUtil.read(stableIdFilename);
     if (_stableId.isEmpty) {
       var id = Uuid().v4();

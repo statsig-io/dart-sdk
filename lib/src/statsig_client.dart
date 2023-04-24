@@ -41,8 +41,9 @@ class StatsigClient {
 
   static Future<StatsigClient> make(String sdkKey,
       [StatsigUser? user, StatsigOptions? options]) async {
+    await StatsigMetadata.loadStableID(options?.overrideStableID);
+
     var client = StatsigClient._make(sdkKey, user?.normalize(options), options);
-    await StatsigMetadata.loadStableID();
     await client._fetchInitialValues();
     return client;
   }

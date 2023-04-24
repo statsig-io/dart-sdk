@@ -8,7 +8,10 @@ class StatsigOptions {
   /// Used to signal the environment tier the user is currently in. [production, staging, development]
   StatsigEnvironment? environment;
 
-  StatsigOptions({this.api, this.initTimeout = 3, this.environment});
+  /// Overrides the auto generated StableID that is set for the device
+  String? overrideStableID;
+
+  StatsigOptions({this.api, this.initTimeout = 3, this.environment, this.overrideStableID});
 }
 
 enum StatsigEnvironment {
