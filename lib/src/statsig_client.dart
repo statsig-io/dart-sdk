@@ -123,11 +123,12 @@ class StatsigClient {
   }
 
   Future<void> _fetchInitialValues() async {
-    var res = await _network.initialize(_user);
+    await _store.load(_user);
+    var res = await _network.initialize(_user, _store);
     if (res is Map) {
-      _store.save(_user, res);
-    } else {
-      await _store.load(_user);
+      if (res["has_updates"] == true) {
+        _store.save(_user, res);
+      }
     }
   }
 

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:nock/nock.dart';
 import 'package:statsig/src/network_service.dart';
 import 'package:statsig/src/statsig_metadata.dart';
+import 'package:statsig/src/internal_store.dart';
 import 'package:statsig/statsig.dart';
 import 'package:test/test.dart';
 
@@ -26,7 +27,8 @@ void main() {
         ..reply(200,
             '{"feature_gates": {}, "dynamic_configs": {}, "layer_configs": {}, "has_updates": true, "time": 1621637839}');
 
-      final response = await networkService?.initialize(StatsigUser());
+      final response =
+          await networkService?.initialize(StatsigUser(), InternalStore());
 
       expect(interceptor.isDone, true);
       expect(response, {
@@ -47,7 +49,8 @@ void main() {
           '{"feature_gates": {}, "dynamic_configs": {}, "layer_configs": {}, "has_updates": true, "time": 1621637839}');
 
       await networkService?.initialize(
-          StatsigUser(userId: "a_user", privateAttributes: {"a": "b"}));
+          StatsigUser(userId: "a_user", privateAttributes: {"a": "b"}),
+          InternalStore());
 
       expect(requestBody["user"]["privateAttributes"], {"a": "b"});
     });

@@ -1,4 +1,5 @@
-import './statsig_options.dart';
+import 'utils.dart';
+import 'dart:convert';
 
 class StatsigUser {
   /// A unique identifier for the user.
@@ -79,5 +80,9 @@ class StatsigUser {
           ? {"statsigEnvironment": _statsigEnvironment}
           : {})
     };
+  }
+
+  String getFullHash() {
+    return Utils.djb2(json.encode(toJsonWithPrivateAttributes()));
   }
 }

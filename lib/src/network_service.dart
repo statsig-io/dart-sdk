@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
+import 'internal_store.dart';
 import 'statsig_event.dart';
 import 'statsig_metadata.dart';
 import 'statsig_options.dart';
@@ -36,13 +37,15 @@ class NetworkService {
     };
   }
 
-  Future<Map?> initialize(StatsigUser user) async {
+  Future<Map?> initialize(StatsigUser user, InternalStore store) async {
     var url = Uri.parse(_host + '/initialize');
     return await _post(
             url,
             {
               "user": user.toJsonWithPrivateAttributes(),
-              "statsigMetadata": StatsigMetadata.toJson()
+              "statsigMetadata": StatsigMetadata.toJson(),
+              "sinceTime": store.getSinceTime(user),
+              "previousDerivedFields": store.getPreviousDerivedFields(user)
             },
             3,
             initialBackoffSeconds)
