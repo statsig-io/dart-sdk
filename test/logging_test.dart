@@ -31,7 +31,7 @@ void main() {
       await Statsig.initialize(
           'a-key',
           StatsigUser(userId: "a-user", privateAttributes: {"secret": "shh"}),
-          StatsigOptions(environment: StatsigEnvironment.staging));
+          StatsigOptions(environment: "staging"));
 
       expect(interceptor.isDone, true);
 

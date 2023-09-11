@@ -15,7 +15,12 @@ extension NormalizedStatsigUser on StatsigUser {
   StatsigUser normalize(StatsigOptions? options) {
     var json = this.toJsonWithPrivateAttributes();
     if (options != null) {
-      json = json..addAll(options.environment?.toJson() ?? {});
+      json = json
+        ..addAll(options.environment == null
+            ? {}
+            : {
+                "statsigEnvironment": {"tier": options.environment}
+              });
     }
     return StatsigUser.fromJson(json);
   }

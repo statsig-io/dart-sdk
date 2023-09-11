@@ -5,25 +5,15 @@ class StatsigOptions {
   /// How long (in seconds) the Statsig client waits for the initial network request. Defaults to 3 seconds
   int initTimeout;
 
-  /// Used to signal the environment tier the user is currently in. [production, staging, development]
-  StatsigEnvironment? environment;
+  /// Used to signal the environment tier the user is currently in.
+  String? environment;
 
   /// Overrides the auto generated StableID that is set for the device
   String? overrideStableID;
 
-  StatsigOptions({this.api, this.initTimeout = 3, this.environment, this.overrideStableID});
-}
-
-enum StatsigEnvironment {
-  development,
-  staging,
-  production,
-}
-
-extension ToJson on StatsigEnvironment {
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        "statsigEnvironment": <String, String>{
-          "tier": this.toString().replaceAll("StatsigEnvironment.", "")
-        }
-      };
+  StatsigOptions(
+      {this.api,
+      this.initTimeout = 3,
+      this.environment,
+      this.overrideStableID});
 }

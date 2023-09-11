@@ -85,4 +85,17 @@ class StatsigUser {
   String getFullHash() {
     return Utils.djb2(json.encode(toJsonWithPrivateAttributes()));
   }
+
+  String getCacheKey() {
+    var key = this.userId.isNotEmpty
+        ? "userID:" + this.userId
+        : "userID:STATSIG_NULL_USER";
+    if (this.customIds != null) {
+      var sortedKeys = this.customIds!.keys.toList()..sort();
+      for (var i = 0; i < sortedKeys.length; i++) {
+        key += sortedKeys[i] + ":" + this.customIds![sortedKeys[i]]!;
+      }
+    }
+    return Utils.djb2(key);
+  }
 }
