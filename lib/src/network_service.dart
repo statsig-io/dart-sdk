@@ -33,7 +33,8 @@ class NetworkService {
       "Content-Type": "application/json",
       "STATSIG-API-KEY": sdkKey,
       "STATSIG-SDK-TYPE": StatsigMetadata.getSDKType(),
-      "STATSIG-SDK-VERSION": StatsigMetadata.getSDKVersion()
+      "STATSIG-SDK-VERSION": StatsigMetadata.getSDKVersion(),
+      "STATSIG-CLIENT-TIME": DateTime.now().millisecondsSinceEpoch.toString(),
     };
   }
 
