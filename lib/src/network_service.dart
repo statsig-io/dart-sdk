@@ -34,7 +34,6 @@ class NetworkService {
       "STATSIG-API-KEY": sdkKey,
       "STATSIG-SDK-TYPE": StatsigMetadata.getSDKType(),
       "STATSIG-SDK-VERSION": StatsigMetadata.getSDKVersion(),
-      "STATSIG-CLIENT-TIME": DateTime.now().millisecondsSinceEpoch.toString(),
     };
   }
 
@@ -70,7 +69,11 @@ class NetworkService {
       [Map? body, int retries = 0, int backoff = 1]) async {
     String data = json.encode(body);
     try {
-      var response = await http.post(url, headers: _headers, body: data);
+      var headers = {
+        ..._headers,
+        "STATSIG-CLIENT-TIME": DateTime.now().millisecondsSinceEpoch.toString(),
+      };
+      var response = await http.post(url, headers: headers, body: data);
 
       if (response.statusCode >= 200 && response.statusCode <= 299) {
         return response.bodyBytes.isEmpty
