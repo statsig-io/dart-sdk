@@ -14,6 +14,6 @@ abstract class Utils {
       hash = (hash << 5) - hash + character;
       hash = hash & hash; // Convert to 32bit integer
     }
-    return hash.toString();
+    return (hash & ((1 << 32) - 1)).toString();
   }
 }
