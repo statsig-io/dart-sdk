@@ -45,7 +45,8 @@ class NetworkService {
               "user": user.toJsonWithPrivateAttributes(),
               "statsigMetadata": StatsigMetadata.toJson(),
               "sinceTime": store.getSinceTime(user),
-              "previousDerivedFields": store.getPreviousDerivedFields(user)
+              "previousDerivedFields": store.getPreviousDerivedFields(user),
+              "hash": 'djb2',
             },
             3,
             initialBackoffSeconds)

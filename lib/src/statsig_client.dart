@@ -1,6 +1,7 @@
 import 'dart:convert';
 import "package:crypto/crypto.dart";
 
+import 'utils.dart';
 import 'internal_store.dart';
 import 'network_service.dart';
 import 'statsig_layer.dart';
@@ -138,8 +139,15 @@ class StatsigClient {
   }
 
   String _getHash(String input) {
-    var bytes = utf8.encode(input);
-    var digest = sha256.convert(bytes);
-    return base64Encode(digest.bytes);
+    switch (_store.hashUsed) {
+      case "none":
+        return input;
+      case "djb2":
+        return Utils.djb2(input);
+      default:
+        var bytes = utf8.encode(input);
+        var digest = sha256.convert(bytes);
+        return base64Encode(digest.bytes);
+    }
   }
 }

@@ -10,6 +10,7 @@ class InternalStore {
   int time = 0;
   Map derivedFields = {};
   String userHash = "";
+  String hashUsed = "";
 
   int getSinceTime(StatsigUser user) {
     if (userHash != user.getFullHash()) {
@@ -33,6 +34,7 @@ class InternalStore {
     time = store?["time"] ?? 0;
     derivedFields = store?["derived_fields"] ?? {};
     userHash = store?["user_hash"] ?? "";
+    hashUsed = store?["hash_used"] ?? "";
   }
 
   Future<void> save(StatsigUser user, Map? response) async {
@@ -42,6 +44,7 @@ class InternalStore {
     time = response?["time"] ?? 0;
     derivedFields = response?["derived_fields"] ?? {};
     userHash = user.getFullHash();
+    hashUsed = response?["hash_used"] ?? "";
 
     await _write(
         user,
@@ -51,7 +54,8 @@ class InternalStore {
           "layer_configs": layerConfigs,
           "time": time,
           "derived_fields": derivedFields,
-          "user_hash": userHash
+          "user_hash": userHash,
+          "hash_used": hashUsed
         }));
   }
 
@@ -62,6 +66,7 @@ class InternalStore {
     time = 0;
     derivedFields = {};
     userHash = "";
+    hashUsed = "";
   }
 
   Future<void> _write(StatsigUser user, String content) async {
