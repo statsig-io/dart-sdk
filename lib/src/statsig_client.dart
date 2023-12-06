@@ -58,6 +58,10 @@ class StatsigClient {
     await _logger.shutdown();
   }
 
+  Future flush() async {
+    await _logger.flush();
+  }
+
   Future updateUser(StatsigUser user) async {
     await _store.clear();
     _user = user.normalize(this._options);

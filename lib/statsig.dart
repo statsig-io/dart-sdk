@@ -29,6 +29,11 @@ class Statsig {
     _clientInstance = null;
   }
 
+  /// Flushes any pending events.
+  static Future flush() async {
+    await _clientInstance?.flush();
+  }
+
   /// Informs the SDK that the user has changed and that values should be refetched from Statsig.
   static Future updateUser(StatsigUser user) async {
     await _clientInstance?.updateUser(user);

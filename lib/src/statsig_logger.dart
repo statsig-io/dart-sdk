@@ -21,7 +21,7 @@ class StatsigLogger {
     _loadFailedLogs();
     _flushTimer =
         Timer.periodic(Duration(milliseconds: loggingIntervalMillis), (_) {
-      _flush();
+      flush();
     });
   }
 
@@ -29,16 +29,16 @@ class StatsigLogger {
     _queue.add(event);
 
     if (_queue.length >= _flushBatchSize) {
-      _flush();
+      flush();
     }
   }
 
   Future shutdown() async {
     _flushTimer.cancel();
-    await _flush(true);
+    await flush(true);
   }
 
-  Future _flush([bool isShuttingDown = false]) async {
+  Future flush([bool isShuttingDown = false]) async {
     if (_queue.isEmpty) {
       return;
     }
@@ -73,7 +73,7 @@ class StatsigLogger {
     }
 
     if (_queue.isNotEmpty) {
-      _flush();
+      flush();
     }
   }
 }
