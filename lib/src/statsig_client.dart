@@ -136,6 +136,11 @@ class StatsigClient {
     await _store.load(_user);
     var res = await _network.initialize(_user, _store);
     if (res is Map) {
+      if (res["hashed_sdk_key_used"] != null) {
+        if (res["hashed_sdk_key_used"] != Utils.djb2(_sdkKey)) {
+          return; 
+        }
+      }
       if (res["has_updates"] == true) {
         _store.save(_user, res);
       }
