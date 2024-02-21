@@ -1,6 +1,6 @@
 @Timeout(Duration(seconds: 1))
 import 'package:nock/nock.dart';
-import 'package:statsig/src/disk_util.dart';
+import 'package:statsig/src/disk_util/disk_util.dart';
 import 'package:statsig/statsig.dart';
 import 'package:test/test.dart';
 
@@ -32,17 +32,17 @@ void main() {
     group("auto generated stable id", () {
       test('a new uuid is generated', () async {
         String? original =
-            await DiskUtil.read("statsig_stable_id", destroyAfterReading: true);
+            await DiskUtil.instance.read("statsig_stable_id", destroyAfterReading: true);
         await Statsig.initialize('a-key');
-        String? current = await DiskUtil.read("statsig_stable_id");
+        String? current = await DiskUtil.instance.read("statsig_stable_id");
         expect(current, isNot(original));
         expect(current, isUuid);
       });
 
       test('persisting the override', () async {
-        String? original = await DiskUtil.read("statsig_stable_id");
+        String? original = await DiskUtil.instance.read("statsig_stable_id");
         await Statsig.initialize('a-key');
-        String? current = await DiskUtil.read("statsig_stable_id");
+        String? current = await DiskUtil.instance.read("statsig_stable_id");
 
         expect(current, original);
       });
@@ -50,23 +50,23 @@ void main() {
 
     group("overriding stable id", () {
       setUp(() async {
-        await DiskUtil.read("statsig_stable_id", destroyAfterReading: true);
+        await DiskUtil.instance.read("statsig_stable_id", destroyAfterReading: true);
         await Statsig.initialize(
             'a-key', null, StatsigOptions(overrideStableID: "my_custom_id"));
 
         var end = DateTime.now().add(Duration(milliseconds: 100));
-        while ((await DiskUtil.read("statsig_stable_id")).isEmpty && DateTime.now().isBefore(end)) { }
+        while ((await DiskUtil.instance.read("statsig_stable_id")).isEmpty && DateTime.now().isBefore(end)) { }
       });
 
       test('saves override to disk', () async {
-        String? current = await DiskUtil.read("statsig_stable_id");
+        String? current = await DiskUtil.instance.read("statsig_stable_id");
         expect(current, "my_custom_id");
       });
 
       test('persisting the override', () async {
         await Statsig.initialize('a-key');
 
-        String? current = await DiskUtil.read("statsig_stable_id");
+        String? current = await DiskUtil.instance.read("statsig_stable_id");
         expect(current, "my_custom_id");
       });
     });

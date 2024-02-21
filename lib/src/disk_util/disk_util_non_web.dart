@@ -1,7 +1,12 @@
 import 'dart:io';
+import 'disk_util.dart';
 
-abstract class DiskUtil {
-  static write(String filename, String contents) async {
+ DiskUtil getDiskUtil() => DiskUtilNonWeb();
+
+class DiskUtilNonWeb extends DiskUtil {
+
+   @override
+  write(String filename, String contents) async {
     var dir = _getTempDir();
     if (!await dir.exists()) {
       await dir.create();
@@ -11,7 +16,8 @@ abstract class DiskUtil {
     await file.writeAsString(contents);
   }
 
-  static Future<String> read(String filename,
+  @override
+  Future<String> read(String filename,
       {bool destroyAfterReading = false}) async {
     var result = '';
     try {
@@ -26,7 +32,7 @@ abstract class DiskUtil {
     return result;
   }
 
-  static Directory _getTempDir() {
+  Directory _getTempDir() {
     return Directory("${Directory.systemTemp.path}/__statsig__");
   }
 }

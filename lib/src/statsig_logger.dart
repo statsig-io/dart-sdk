@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'disk_util.dart';
+import 'disk_util/disk_util.dart';
 import 'network_service.dart';
 import 'statsig_event.dart';
 
@@ -51,7 +51,7 @@ class StatsigLogger {
     }
 
     if (isShuttingDown) {
-      await DiskUtil.write(failedEventsFilename, json.encode(events));
+      await DiskUtil.instance.write(failedEventsFilename, json.encode(events));
     } else {
       _flushBatchSize = min(_flushBatchSize * 2, maxQueueLength);
       _queue += events;
@@ -60,7 +60,7 @@ class StatsigLogger {
 
   Future _loadFailedLogs() async {
     var contents =
-        await DiskUtil.read(failedEventsFilename, destroyAfterReading: true);
+        await DiskUtil.instance.read(failedEventsFilename, destroyAfterReading: true);
     if (!contents.startsWith("[") || !contents.endsWith("]")) {
       return;
     }

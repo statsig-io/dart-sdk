@@ -1,5 +1,5 @@
 import 'package:uuid/uuid.dart';
-import 'disk_util.dart';
+import 'disk_util/disk_util.dart';
 
 abstract class StatsigMetadata {
   static String getSDKVersion() {
@@ -32,14 +32,14 @@ abstract class StatsigMetadata {
 
     if (overrideStableID != null && overrideStableID.isNotEmpty) {
       _stableId = overrideStableID;
-      DiskUtil.write(stableIdFilename, overrideStableID);
+      DiskUtil.instance.write(stableIdFilename, overrideStableID);
       return;
     }
 
-    _stableId = await DiskUtil.read(stableIdFilename);
+    _stableId = await DiskUtil.instance.read(stableIdFilename);
     if (_stableId.isEmpty) {
       var id = Uuid().v4();
-      await DiskUtil.write(stableIdFilename, id);
+      await DiskUtil.instance.write(stableIdFilename, id);
       _stableId = id;
     }
   }

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'disk_util.dart';
+import 'disk_util/disk_util.dart';
 import 'statsig_user.dart';
 
 class InternalStore {
@@ -71,13 +71,13 @@ class InternalStore {
 
   Future<void> _write(StatsigUser user, String content) async {
     String key = user.getCacheKey();
-    await DiskUtil.write("$key.statsig_store", content);
+    await DiskUtil.instance.write("$key.statsig_store", content);
   }
 
   Future<Map?> _read(StatsigUser user) async {
     try {
       String key = user.getCacheKey();
-      var content = await DiskUtil.read("$key.statsig_store");
+      var content = await DiskUtil.instance.read("$key.statsig_store");
       var data = json.decode(content);
       return data is Map ? data : null;
     } catch (_) {}
