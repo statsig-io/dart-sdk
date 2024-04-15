@@ -3,7 +3,7 @@ class DynamicConfig {
   final String name;
 
   /// The loaded values of this DynamicConfig for the current user.
-  Map value;
+  Map<String, dynamic> value;
 
   DynamicConfig(this.name, [this.value = const {}]);
 

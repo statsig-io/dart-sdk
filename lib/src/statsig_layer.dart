@@ -2,7 +2,7 @@ class Layer {
   /// The name of this Layer.
   final String name;
 
-  final Map _value;
+  final Map<String, dynamic> _value;
   final Function(Layer, String) _onParamExposure;
 
   Layer(this.name, [this._value = const {}, this._onParamExposure = noop]);
