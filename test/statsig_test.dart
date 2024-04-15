@@ -16,7 +16,7 @@ void main() {
 
   group('Statsig when Initialized', () {
     setUp(() async {
-      final interceptor = nock('https://statsigapi.net')
+      final interceptor = nock('https://featuregates.org')
           .post('/v1/initialize', (body) => true)
         ..reply(200, TestData.initializeResponse);
       await Statsig.initialize('a-key');

@@ -25,7 +25,7 @@ void main() {
     Completer<bool>? completer;
 
     setUp(() async {
-      final interceptor = nock('https://statsigapi.net')
+      final interceptor = nock('https://featuregates.org')
           .post('/v1/initialize', (body) => true)
         ..reply(200, TestData.initializeResponse);
       await Statsig.initialize(

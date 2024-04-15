@@ -22,7 +22,7 @@ void main() {
 
   group('Network Service', () {
     test('fetching values from the network', () async {
-      final interceptor = nock('https://statsigapi.net')
+      final interceptor = nock('https://featuregates.org')
           .post('/v1/initialize', (body) => true)
         ..reply(200,
             '{"feature_gates": {}, "dynamic_configs": {}, "layer_configs": {}, "has_updates": true, "time": 1621637839}');
@@ -42,7 +42,7 @@ void main() {
 
     test('includes private attributes from the user', () async {
       Map requestBody = {};
-      nock('https://statsigapi.net').post('/v1/initialize', (body) {
+      nock('https://featuregates.org').post('/v1/initialize', (body) {
         requestBody = jsonDecode(utf8.decode(body)) as Map;
         return true;
       }).reply(200,

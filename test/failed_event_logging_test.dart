@@ -28,7 +28,7 @@ void main() {
       await Statsig.shutdown();
 
       final interceptor =
-          nock('https://statsigapi.net').post('/v1/initialize', (body) => true)
+          nock('https://featuregates.org').post('/v1/initialize', (body) => true)
             ..persist()
             ..reply(200, TestData.initializeResponse);
       await Statsig.initialize('a-key');

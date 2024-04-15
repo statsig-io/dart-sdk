@@ -9,7 +9,8 @@ import 'statsig_metadata.dart';
 import 'statsig_options.dart';
 import 'statsig_user.dart';
 
-const defaultHost = 'https://statsigapi.net/v1';
+const defaultLoggingHost = 'https://statsigapi.net/v1';
+const defaultHost = 'https://featuregates.org/v1';
 
 const retryCodes = {
   408: true,
@@ -25,10 +26,12 @@ const retryCodes = {
 class NetworkService {
   final StatsigOptions _options;
   late String _host;
+  late String _loggingHost;
   late Map<String, String> _headers;
 
   NetworkService(this._options, String sdkKey) {
     _host = _options.api ?? defaultHost;
+    _loggingHost = _options.api ?? defaultLoggingHost;
     _headers = {
       "Content-Type": "application/json",
       "STATSIG-API-KEY": sdkKey,
@@ -57,7 +60,7 @@ class NetworkService {
   }
 
   Future<bool> sendEvents(List<StatsigEvent> events) async {
-    var url = Uri.parse(_host + '/rgstr');
+    var url = Uri.parse(_loggingHost + '/rgstr');
     var result = await _post(
         url,
         {'events': events, 'statsigMetadata': StatsigMetadata.toJson()},
