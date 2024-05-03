@@ -86,8 +86,10 @@ void main() {
 
         var event = (logs as Map)['events'][0] as Map;
         expect(event['eventName'], "statsig::gate_exposure");
-        expect(event['metadata'],
-            {"gate": "a_gate", "gateValue": "true", "ruleID": "a_rule_id"});
+        expect(event['metadata']["gate"], "a_gate");
+        expect(event['metadata']["gateValue"], "true");
+        expect(event["metadata"]["ruleID"], "a_rule_id");
+        expect(event["metadata"]["reason"], "Network:Recognized");
         expect((logs as Map)['statsigMetadata']['sdkType'], 'dart-client');
       });
     });
@@ -108,8 +110,9 @@ void main() {
 
         var event = (logs as Map)['events'][0] as Map;
         expect(event['eventName'], "statsig::config_exposure");
-        expect(
-            event['metadata'], {"config": "a_config", "ruleID": "a_rule_id"});
+        expect(event['metadata']["config"], "a_config");
+        expect(event["metadata"]["ruleID"], "a_rule_id");
+        expect(event["metadata"]["reason"], "Network:Recognized");
         expect((logs as Map)['statsigMetadata']['sdkType'], 'dart-client');
       });
     });

@@ -3,14 +3,20 @@ import 'dart:convert';
 import 'disk_util/disk_util.dart';
 import 'statsig_user.dart';
 
+enum EvalReason { NetworkNotModified, Network, Cache, Uninitialized }
+
+enum EvalStatus { Recognized, Unrecognized }
+
 class InternalStore {
   Map featureGates = {};
   Map dynamicConfigs = {};
   Map layerConfigs = {};
   int time = 0;
+  int receivedAt = 0;
   Map derivedFields = {};
   String userHash = "";
   String hashUsed = "";
+  String reason = EvalReason.Uninitialized.name;
 
   int getSinceTime(StatsigUser user) {
     if (userHash != user.getFullHash()) {
@@ -35,6 +41,8 @@ class InternalStore {
     derivedFields = store?["derived_fields"] ?? {};
     userHash = store?["user_hash"] ?? "";
     hashUsed = store?["hash_used"] ?? "";
+    reason = EvalReason.Cache.name;
+    receivedAt = store?["receivedAt"] ?? 0;
   }
 
   Future<void> save(StatsigUser user, Map? response) async {
@@ -45,6 +53,8 @@ class InternalStore {
     derivedFields = response?["derived_fields"] ?? {};
     userHash = user.getFullHash();
     hashUsed = response?["hash_used"] ?? "";
+    reason = EvalReason.Network.name;
+    receivedAt = DateTime.now().millisecondsSinceEpoch;
 
     await _write(
         user,
@@ -55,7 +65,8 @@ class InternalStore {
           "time": time,
           "derived_fields": derivedFields,
           "user_hash": userHash,
-          "hash_used": hashUsed
+          "hash_used": hashUsed,
+          "receivedAt": receivedAt,
         }));
   }
 
@@ -67,6 +78,8 @@ class InternalStore {
     derivedFields = {};
     userHash = "";
     hashUsed = "";
+    reason = EvalReason.Uninitialized.name;
+    receivedAt = 0;
   }
 
   Future<void> _write(StatsigUser user, String content) async {

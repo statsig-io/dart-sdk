@@ -74,11 +74,27 @@ class StatsigClient {
     var hash = _getHash(gateName);
     var res = _store.featureGates[hash];
     if (res == null) {
+      _logger.enqueue(StatsigEvent.createGateExposure(
+          _user,
+          gateName,
+          false,
+          "",
+          [],
+          _store.reason + ':' + EvalStatus.Unrecognized.name,
+          _store.time,
+          _store.receivedAt));
       return defaultValue;
     }
 
-    _logger.enqueue(StatsigEvent.createGateExposure(_user, gateName,
-        res["value"], res["rule_id"], res["secondary_exposures"]));
+    _logger.enqueue(StatsigEvent.createGateExposure(
+        _user,
+        gateName,
+        res["value"],
+        res["rule_id"],
+        res["secondary_exposures"],
+        _store.reason + ':' + EvalStatus.Recognized.name,
+        _store.time,
+        _store.receivedAt));
 
     return res["value"];
   }
@@ -87,11 +103,25 @@ class StatsigClient {
     var hash = _getHash(configName);
     Map? res = _store.dynamicConfigs[hash];
     if (res == null) {
+      _logger.enqueue(StatsigEvent.createConfigExposure(
+          _user,
+          configName,
+          "",
+          [],
+          _store.reason + ':' + EvalStatus.Unrecognized.name,
+          _store.time,
+          _store.receivedAt));
       return DynamicConfig.empty(configName);
     }
 
     _logger.enqueue(StatsigEvent.createConfigExposure(
-        _user, configName, res["rule_id"], res["secondary_exposures"]));
+        _user,
+        configName,
+        res["rule_id"],
+        res["secondary_exposures"],
+        _store.reason + ':' + EvalStatus.Recognized.name,
+        _store.time,
+        _store.receivedAt));
 
     return DynamicConfig(configName, res["value"]);
   }
@@ -116,8 +146,17 @@ class StatsigClient {
         exposures = res["secondary_exposures"] ?? [];
       }
 
-      _logger.enqueue(StatsigEvent.createLayerExposure(_user, layerName, ruleId,
-          allocatedExperiment, parameterName, isExplicit, exposures));
+      _logger.enqueue(StatsigEvent.createLayerExposure(
+          _user,
+          layerName,
+          ruleId,
+          allocatedExperiment,
+          parameterName,
+          isExplicit,
+          exposures,
+          _store.reason + ':' + EvalStatus.Recognized.name,
+          _store.time,
+          _store.receivedAt));
     }
 
     return Layer(layerName, res["value"], onExposure);
@@ -138,11 +177,13 @@ class StatsigClient {
     if (res is Map) {
       if (res["hashed_sdk_key_used"] != null) {
         if (res["hashed_sdk_key_used"] != Utils.djb2(_sdkKey)) {
-          return; 
+          return;
         }
       }
       if (res["has_updates"] == true) {
         _store.save(_user, res);
+      } else {
+        _store.reason = EvalReason.NetworkNotModified.name;
       }
     }
   }

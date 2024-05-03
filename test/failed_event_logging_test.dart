@@ -27,10 +27,10 @@ void main() {
     setUp(() async {
       await Statsig.shutdown();
 
-      final interceptor =
-          nock('https://featuregates.org').post('/v1/initialize', (body) => true)
-            ..persist()
-            ..reply(200, TestData.initializeResponse);
+      final interceptor = nock('https://featuregates.org')
+          .post('/v1/initialize', (body) => true)
+        ..persist()
+        ..reply(200, TestData.initializeResponse);
       await Statsig.initialize('a-key');
 
       expect(interceptor.isDone, true);
@@ -73,7 +73,9 @@ void main() {
 
       var event = (logs as Map)['events'][0] as Map;
       expect(event['eventName'], "statsig::config_exposure");
-      expect(event['metadata'], {"config": "a_config", "ruleID": "a_rule_id"});
+      expect(event['metadata']["config"], "a_config");
+      expect(event["metadata"]["ruleID"], "a_rule_id");
+      expect(event["metadata"]["reason"], "Network:Recognized");
       expect((logs as Map)['statsigMetadata']['sdkType'], 'dart-client');
     });
   });
