@@ -3,7 +3,14 @@ import 'dart:convert';
 import 'disk_util/disk_util.dart';
 import 'statsig_user.dart';
 
-enum EvalReason { NetworkNotModified, Network, Cache, Uninitialized }
+enum EvalReason {
+  Loading,
+  NetworkNotModified,
+  Network,
+  Cache,
+  Uninitialized,
+  NoValues
+}
 
 enum EvalStatus { Recognized, Unrecognized }
 
@@ -16,7 +23,7 @@ class InternalStore {
   Map derivedFields = {};
   String userHash = "";
   String hashUsed = "";
-  String reason = EvalReason.Uninitialized.name;
+  EvalReason reason = EvalReason.Uninitialized;
 
   int getSinceTime(StatsigUser user) {
     if (userHash != user.getFullHash()) {
@@ -34,15 +41,25 @@ class InternalStore {
 
   Future<void> load(StatsigUser user) async {
     var store = await _read(user);
-    featureGates = store?["feature_gates"] ?? {};
-    dynamicConfigs = store?["dynamic_configs"] ?? {};
-    layerConfigs = store?["layer_configs"] ?? {};
-    time = store?["time"] ?? 0;
-    derivedFields = store?["derived_fields"] ?? {};
-    userHash = store?["user_hash"] ?? "";
-    hashUsed = store?["hash_used"] ?? "";
-    reason = EvalReason.Cache.name;
-    receivedAt = store?["receivedAt"] ?? 0;
+    if (store == null) {
+      return;
+    }
+
+    featureGates = store["feature_gates"] ?? {};
+    dynamicConfigs = store["dynamic_configs"] ?? {};
+    layerConfigs = store["layer_configs"] ?? {};
+    time = store["time"] ?? 0;
+    derivedFields = store["derived_fields"] ?? {};
+    userHash = store["user_hash"] ?? "";
+    hashUsed = store["hash_used"] ?? "";
+    receivedAt = store["receivedAt"] ?? 0;
+    reason = EvalReason.Cache;
+  }
+
+  finalize() {
+    if (reason == EvalReason.Loading) {
+      reason = EvalReason.NoValues;
+    }
   }
 
   Future<void> save(StatsigUser user, Map? response) async {
@@ -53,7 +70,7 @@ class InternalStore {
     derivedFields = response?["derived_fields"] ?? {};
     userHash = user.getFullHash();
     hashUsed = response?["hash_used"] ?? "";
-    reason = EvalReason.Network.name;
+    reason = EvalReason.Network;
     receivedAt = DateTime.now().millisecondsSinceEpoch;
 
     await _write(
@@ -70,7 +87,7 @@ class InternalStore {
         }));
   }
 
-  Future<void> clear() async {
+  void clear() {
     featureGates = {};
     dynamicConfigs = {};
     layerConfigs = {};
@@ -78,7 +95,7 @@ class InternalStore {
     derivedFields = {};
     userHash = "";
     hashUsed = "";
-    reason = EvalReason.Uninitialized.name;
+    reason = EvalReason.NoValues;
     receivedAt = 0;
   }
 

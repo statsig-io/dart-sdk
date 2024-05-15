@@ -1,3 +1,5 @@
+import 'evaluation_details.dart';
+
 class DynamicConfig {
   /// The name of this DynamicConfig
   final String name;
@@ -5,7 +7,10 @@ class DynamicConfig {
   /// The loaded values of this DynamicConfig for the current user.
   Map<String, dynamic> value;
 
-  DynamicConfig(this.name, [this.value = const {}]);
+  /// Metadata about how this value was recieved.
+  EvaluationDetails details;
+
+  DynamicConfig(this.name, this.details, [this.value = const {}]);
 
   /// Gets a value from the DynamicConfig
   ///
@@ -15,7 +20,7 @@ class DynamicConfig {
     return value[key] ?? defaultValue;
   }
 
-  static empty(String name) {
-    return DynamicConfig(name);
+  static empty(String name, EvaluationDetails details) {
+    return DynamicConfig(name, details);
   }
 }

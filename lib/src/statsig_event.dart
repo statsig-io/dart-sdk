@@ -1,4 +1,5 @@
 import 'statsig_user.dart';
+import 'evaluation_details.dart';
 
 class StatsigEvent {
   String eventName;
@@ -45,36 +46,28 @@ class StatsigEvent {
       bool gateValue,
       String ruleId,
       List<dynamic> exposures,
-      String reason,
-      int time,
-      int receivedAt) {
+      EvaluationDetails details) {
     return StatsigEvent._make(user, "statsig::gate_exposure",
         metadata: {
           "gate": gateName,
           "gateValue": gateValue.toString(),
           "ruleID": ruleId,
-          "reason": reason,
-          "lcut": time.toString(),
-          "receivedAt": receivedAt.toString()
+          "reason": details.reason,
+          "lcut": details.lcut.toString(),
+          "receivedAt": details.receivedAt.toString()
         },
         exposures: exposures);
   }
 
-  static StatsigEvent createConfigExposure(
-      StatsigUser user,
-      String configName,
-      String ruleId,
-      List<dynamic> exposures,
-      String reason,
-      int time,
-      int receivedAt) {
+  static StatsigEvent createConfigExposure(StatsigUser user, String configName,
+      String ruleId, List<dynamic> exposures, EvaluationDetails details) {
     return StatsigEvent._make(user, "statsig::config_exposure",
         metadata: {
           "config": configName,
           "ruleID": ruleId,
-          "reason": reason,
-          "lcut": time.toString(),
-          "receivedAt": receivedAt.toString()
+          "reason": details.reason,
+          "lcut": details.lcut.toString(),
+          "receivedAt": details.receivedAt.toString()
         },
         exposures: exposures);
   }
@@ -87,9 +80,7 @@ class StatsigEvent {
       String parameterName,
       bool isExplicitParameter,
       List<dynamic> exposures,
-      String reason,
-      int time,
-      int receivedAt) {
+      EvaluationDetails details) {
     return StatsigEvent._make(user, "statsig::layer_exposure",
         metadata: {
           "config": layerName,
@@ -97,9 +88,9 @@ class StatsigEvent {
           "allocatedExperiment": allocatedExperiment,
           "parameterName": parameterName,
           "isExplicitParameter": isExplicitParameter.toString(),
-          "reason": reason,
-          "lcut": time.toString(),
-          "receivedAt": receivedAt.toString()
+          "reason": details.reason,
+          "lcut": details.lcut.toString(),
+          "receivedAt": details.receivedAt.toString()
         },
         exposures: exposures);
   }

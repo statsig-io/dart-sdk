@@ -79,6 +79,10 @@ class NetworkService {
       };
       var response = await http.post(url, headers: headers, body: data);
 
+      if (response.statusCode == 204) {
+        return {"has_updates": false};
+      }
+
       if (response.statusCode >= 200 && response.statusCode <= 299) {
         return response.bodyBytes.isEmpty
             ? {}

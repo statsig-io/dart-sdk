@@ -2,9 +2,13 @@ export 'src/statsig_options.dart' show StatsigOptions, StatsigEnvironment;
 export 'src/statsig_user.dart' show StatsigUser;
 export 'src/dynamic_config.dart' show DynamicConfig;
 export 'src/statsig_layer.dart' show Layer;
+export 'src/evaluation_details.dart' show EvaluationDetails;
+export 'src/feature_gate.dart' show FeatureGate;
 
 import 'package:meta/meta.dart';
 import 'src/dynamic_config.dart';
+import 'src/feature_gate.dart';
+import 'src/evaluation_details.dart';
 import 'src/statsig_client.dart';
 import 'src/statsig_layer.dart';
 import 'src/statsig_options.dart';
@@ -44,21 +48,28 @@ class Statsig {
     return _clientInstance?.checkGate(gateName, defaultValue) ?? defaultValue;
   }
 
+  static FeatureGate getFeatureGate(String gateName,
+      [bool defaultValue = false]) {
+    return _clientInstance?.getFeatureGate(gateName, defaultValue) ??
+        FeatureGate.empty(gateName, EvaluationDetails.uninitialized());
+  }
+
   /// Returns the [DynamicConfig] with the given configName.
   static DynamicConfig getConfig(String configName) {
     return _clientInstance?.getConfig(configName) ??
-        DynamicConfig.empty(configName);
+        DynamicConfig.empty(configName, EvaluationDetails.uninitialized());
   }
 
   /// Returns the experiment with the given name as a [DynamicConfig].
   static DynamicConfig getExperiment(String experimentName) {
     return _clientInstance?.getConfig(experimentName) ??
-        DynamicConfig.empty(experimentName);
+        DynamicConfig.empty(experimentName, EvaluationDetails.uninitialized());
   }
 
   /// Returns the [Layer] with the given layerName.
   static Layer getLayer(String layerName) {
-    return _clientInstance?.getLayer(layerName) ?? Layer.empty(layerName);
+    return _clientInstance?.getLayer(layerName) ??
+        Layer.empty(layerName, EvaluationDetails.uninitialized());
   }
 
   /// Logs a custom event to Statsig.
