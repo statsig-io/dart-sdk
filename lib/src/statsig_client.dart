@@ -1,5 +1,6 @@
 import 'dart:convert';
 import "package:crypto/crypto.dart";
+import 'package:statsig/src/feature_gate.dart';
 
 import 'utils.dart';
 import 'internal_store.dart';
@@ -11,6 +12,7 @@ import 'statsig_options.dart';
 import 'statsig_user.dart';
 import 'statsig_event.dart';
 import 'dynamic_config.dart';
+import 'evaluation_details.dart';
 
 extension NormalizedStatsigUser on StatsigUser {
   StatsigUser normalize(StatsigOptions? options) {
@@ -63,7 +65,7 @@ class StatsigClient {
   }
 
   Future updateUser(StatsigUser user) async {
-    await _store.clear();
+    _store.clear();
     _user = user.normalize(this._options);
     StatsigMetadata.regenSessionID();
 
@@ -71,69 +73,69 @@ class StatsigClient {
   }
 
   bool checkGate(String gateName, [bool defaultValue = false]) {
+    return getFeatureGate(gateName, defaultValue).value;
+  }
+
+  FeatureGate getFeatureGate(String gateName, [bool defaultValue = false]) {
     var hash = _getHash(gateName);
     var res = _store.featureGates[hash];
+
+    var details = EvaluationDetails(
+        _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),
+        _store.time,
+        _store.receivedAt);
+
     if (res == null) {
       _logger.enqueue(StatsigEvent.createGateExposure(
-          _user,
-          gateName,
-          false,
-          "",
-          [],
-          _store.reason + ':' + EvalStatus.Unrecognized.name,
-          _store.time,
-          _store.receivedAt));
-      return defaultValue;
+          _user, gateName, defaultValue, "", [], details));
+      return FeatureGate(gateName, details, defaultValue);
     }
 
-    _logger.enqueue(StatsigEvent.createGateExposure(
-        _user,
-        gateName,
-        res["value"],
-        res["rule_id"],
-        res["secondary_exposures"],
-        _store.reason + ':' + EvalStatus.Recognized.name,
-        _store.time,
-        _store.receivedAt));
+    details.reason = _getFormalEvalReason(_store.reason, EvalStatus.Recognized);
+    _logger.enqueue(StatsigEvent.createGateExposure(_user, gateName,
+        res["value"], res["rule_id"], res["secondary_exposures"], details));
 
-    return res["value"];
+    return FeatureGate(gateName, details, res["value"]);
   }
 
   DynamicConfig getConfig(String configName) {
     var hash = _getHash(configName);
     Map? res = _store.dynamicConfigs[hash];
+
+    var details = EvaluationDetails(
+        _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),
+        _store.time,
+        _store.receivedAt);
+
     if (res == null) {
       _logger.enqueue(StatsigEvent.createConfigExposure(
-          _user,
-          configName,
-          "",
-          [],
-          _store.reason + ':' + EvalStatus.Unrecognized.name,
-          _store.time,
-          _store.receivedAt));
-      return DynamicConfig.empty(configName);
+          _user, configName, "", [], details));
+
+      return DynamicConfig.empty(configName, details);
     }
 
-    _logger.enqueue(StatsigEvent.createConfigExposure(
-        _user,
-        configName,
-        res["rule_id"],
-        res["secondary_exposures"],
-        _store.reason + ':' + EvalStatus.Recognized.name,
-        _store.time,
-        _store.receivedAt));
+    details.reason = _getFormalEvalReason(_store.reason, EvalStatus.Recognized);
+    _logger.enqueue(StatsigEvent.createConfigExposure(_user, configName,
+        res["rule_id"], res["secondary_exposures"], details));
 
-    return DynamicConfig(configName, res["value"]);
+    return DynamicConfig(configName, details, res["value"]);
   }
 
   Layer getLayer(String layerName) {
     var hash = _getHash(layerName);
     Map? res = _store.layerConfigs[hash];
+
+    var details = EvaluationDetails(
+        _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),
+        _store.time,
+        _store.receivedAt);
+
     if (res == null) {
-      return Layer.empty(layerName);
+      return Layer.empty(layerName, details);
     }
 
     String ruleId = res["rule_id"];
+    details.reason = _getFormalEvalReason(_store.reason, EvalStatus.Recognized);
 
     onExposure(Layer layer, String parameterName) {
       var allocatedExperiment = "";
@@ -146,20 +148,11 @@ class StatsigClient {
         exposures = res["secondary_exposures"] ?? [];
       }
 
-      _logger.enqueue(StatsigEvent.createLayerExposure(
-          _user,
-          layerName,
-          ruleId,
-          allocatedExperiment,
-          parameterName,
-          isExplicit,
-          exposures,
-          _store.reason + ':' + EvalStatus.Recognized.name,
-          _store.time,
-          _store.receivedAt));
+      _logger.enqueue(StatsigEvent.createLayerExposure(_user, layerName, ruleId,
+          allocatedExperiment, parameterName, isExplicit, exposures, details));
     }
 
-    return Layer(layerName, res["value"], onExposure);
+    return Layer(layerName, details, res["value"], onExposure);
   }
 
   void logEvent(String eventName,
@@ -182,10 +175,12 @@ class StatsigClient {
       }
       if (res["has_updates"] == true) {
         _store.save(_user, res);
-      } else {
-        _store.reason = EvalReason.NetworkNotModified.name;
+      } else if (res["has_updates"] == false) {
+        _store.reason = EvalReason.NetworkNotModified;
       }
     }
+
+    _store.finalize();
   }
 
   String _getHash(String input) {
@@ -199,5 +194,13 @@ class StatsigClient {
         var digest = sha256.convert(bytes);
         return base64Encode(digest.bytes);
     }
+  }
+
+  String _getFormalEvalReason(EvalReason reason, EvalStatus status) {
+    if (reason == EvalReason.Uninitialized || reason == EvalReason.NoValues) {
+      return reason.name;
+    }
+
+    return reason.name + ":" + status.name;
   }
 }

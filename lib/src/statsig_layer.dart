@@ -1,11 +1,17 @@
+import 'evaluation_details.dart';
+
 class Layer {
   /// The name of this Layer.
   final String name;
 
+  /// Metadata about how this value was recieved.
+  EvaluationDetails details;
+
   final Map<String, dynamic> _value;
   final Function(Layer, String) _onParamExposure;
 
-  Layer(this.name, [this._value = const {}, this._onParamExposure = noop]);
+  Layer(this.name, this.details,
+      [this._value = const {}, this._onParamExposure = noop]);
 
   /// Gets a value from the Layer
   ///
@@ -20,8 +26,8 @@ class Layer {
     return _value[key] ?? defaultValue;
   }
 
-  static empty(String name) {
-    return Layer(name);
+  static empty(String name, EvaluationDetails details) {
+    return Layer(name, details);
   }
 }
 
