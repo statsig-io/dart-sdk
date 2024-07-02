@@ -1,5 +1,6 @@
 import 'package:uuid/uuid.dart';
 import 'disk_util/disk_util.dart';
+import 'os_util/os_util.dart';
 
 abstract class StatsigMetadata {
   static String getSDKVersion() {
@@ -27,6 +28,10 @@ abstract class StatsigMetadata {
     return _stableId;
   }
 
+  static String? getOSName() {
+    return OSUtil.instance.getOSName();
+  }
+
   static Future loadStableID([String? overrideStableID]) async {
     const stableIdFilename = "statsig_stable_id";
 
@@ -45,11 +50,16 @@ abstract class StatsigMetadata {
   }
 
   static Map toJson() {
-    return {
+    var res = {
       "sdkVersion": getSDKVersion(),
       "sdkType": getSDKType(),
       "sessionID": getSessionID(),
-      "stableID": getStableID()
+      "stableID": getStableID(),
     };
+    var systemName = getOSName();
+    if (systemName != null) {
+      res["systemName"] = systemName;
+    }
+    return res;
   }
 }
