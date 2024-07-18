@@ -65,11 +65,14 @@ class StatsigClient {
   }
 
   Future updateUser(StatsigUser user) async {
-    _store.clear();
-    _user = user.normalize(this._options);
+    var isSameUser = user.getCacheKey() == _user.getCacheKey();
+    if (!isSameUser) {
+      _store.clear();
+    }
+    _user = user.normalize(_options);
     StatsigMetadata.regenSessionID();
 
-    await _fetchInitialValues();
+    await _fetchInitialValues(shouldLoadCache: !isSameUser);
   }
 
   bool checkGate(String gateName, [bool defaultValue = false]) {
@@ -164,8 +167,10 @@ class StatsigClient {
     return;
   }
 
-  Future<void> _fetchInitialValues() async {
-    await _store.load(_user);
+  Future<void> _fetchInitialValues({bool shouldLoadCache = true}) async {
+    if (shouldLoadCache) {
+      await _store.load(_user);
+    }
     var res = await _network.initialize(_user, _store);
     if (res is Map) {
       if (res["hashed_sdk_key_used"] != null) {
