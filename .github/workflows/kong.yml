@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Get KONG
         run: |
-          git clone https://${{ secrets.KONG_REPO_PAT }}@github.com/statsig-io/kong.git
+          git clone https://${{ secrets.KONG_FINE_GRAINED_REPO_PAT }}@github.com/statsig-io/kong.git
 
       - uses: dart-lang/setup-dart@v1.3
 
@@ -24,7 +24,7 @@ jobs:
           ./pull-and-build-sdk.sh $GITHUB_REPOSITORY $GITHUB_HEAD_REF
           dart pub get
         env:
-          repo_pat: ${{ secrets.KONG_REPO_PAT }}
+          repo_pat: ${{ secrets.KONG_FINE_GRAINED_REPO_PAT }}
 
       - name: Run Tests
         run: |
