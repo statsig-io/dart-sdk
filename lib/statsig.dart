@@ -6,6 +6,7 @@ export 'src/evaluation_details.dart' show EvaluationDetails;
 export 'src/feature_gate.dart' show FeatureGate;
 
 import 'package:meta/meta.dart';
+import 'package:statsig/src/parameter_store.dart';
 import 'src/dynamic_config.dart';
 import 'src/feature_gate.dart';
 import 'src/evaluation_details.dart';
@@ -70,6 +71,12 @@ class Statsig {
   static Layer getLayer(String layerName) {
     return _clientInstance?.getLayer(layerName) ??
         Layer.empty(layerName, EvaluationDetails.uninitialized());
+  }
+
+  static ParameterStore getParameterStore(String parameterStoreName) {
+    return _clientInstance?.getParameterStore(parameterStoreName) ??
+        ParameterStore.empty(
+            parameterStoreName, EvaluationDetails.uninitialized());
   }
 
   /// Logs a custom event to Statsig.

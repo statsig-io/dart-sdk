@@ -1,6 +1,7 @@
 import 'dart:convert';
 import "package:crypto/crypto.dart";
 import 'package:statsig/src/feature_gate.dart';
+import 'package:statsig/src/parameter_store.dart';
 
 import 'utils.dart';
 import 'internal_store.dart';
@@ -68,6 +69,7 @@ class StatsigClient {
     var isSameUser = user.getCacheKey() == _user.getCacheKey();
     if (!isSameUser) {
       _store.clear();
+      _logger.clear();
     }
     _user = user.normalize(_options);
     StatsigMetadata.regenSessionID();
@@ -89,15 +91,13 @@ class StatsigClient {
         _store.receivedAt);
 
     if (res == null) {
-      _logger.enqueue(StatsigEvent.createGateExposure(
-          _user, gateName, defaultValue, "", [], details));
+      _logger.logGateExposure(gateName, _user, details, defaultValue, "", []);
       return FeatureGate(gateName, details, defaultValue);
     }
 
     details.reason = _getFormalEvalReason(_store.reason, EvalStatus.Recognized);
-    _logger.enqueue(StatsigEvent.createGateExposure(_user, gateName,
-        res["value"], res["rule_id"], res["secondary_exposures"], details));
-
+    _logger.logGateExposure(gateName, _user, details, res["value"],
+        res["rule_id"], res["secondary_exposures"]);
     return FeatureGate(gateName, details, res["value"]);
   }
 
@@ -111,15 +111,14 @@ class StatsigClient {
         _store.receivedAt);
 
     if (res == null) {
-      _logger.enqueue(StatsigEvent.createConfigExposure(
-          _user, configName, "", [], details));
+      _logger.logConfigExposure(configName, _user, details, "", []);
 
       return DynamicConfig.empty(configName, details);
     }
 
     details.reason = _getFormalEvalReason(_store.reason, EvalStatus.Recognized);
-    _logger.enqueue(StatsigEvent.createConfigExposure(_user, configName,
-        res["rule_id"], res["secondary_exposures"], details));
+    _logger.logConfigExposure(
+        configName, _user, details, res["rule_id"], res["secondary_exposures"]);
 
     return DynamicConfig(configName, details, res["value"]);
   }
@@ -151,11 +150,25 @@ class StatsigClient {
         exposures = res["secondary_exposures"] ?? [];
       }
 
-      _logger.enqueue(StatsigEvent.createLayerExposure(_user, layerName, ruleId,
-          allocatedExperiment, parameterName, isExplicit, exposures, details));
+      _logger.logLayerExposure(layerName, _user, details, ruleId, exposures,
+          isExplicit, allocatedExperiment, parameterName);
     }
 
     return Layer(layerName, details, res["value"], onExposure);
+  }
+
+  ParameterStore getParameterStore(String parameterStoreName) {
+    var res = _store.paramStores[parameterStoreName];
+
+    var details = EvaluationDetails(
+        _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),
+        _store.time,
+        _store.receivedAt);
+
+    if (res == null) {
+      return ParameterStore.empty(parameterStoreName, details);
+    }
+    return ParameterStore(this, parameterStoreName, details, res);
   }
 
   void logEvent(String eventName,

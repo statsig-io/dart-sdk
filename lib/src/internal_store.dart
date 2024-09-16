@@ -18,6 +18,7 @@ class InternalStore {
   Map featureGates = {};
   Map dynamicConfigs = {};
   Map layerConfigs = {};
+  Map paramStores = {};
   int time = 0;
   int receivedAt = 0;
   Map derivedFields = {};
@@ -48,6 +49,7 @@ class InternalStore {
     featureGates = store["feature_gates"] ?? {};
     dynamicConfigs = store["dynamic_configs"] ?? {};
     layerConfigs = store["layer_configs"] ?? {};
+    paramStores = store["param_stores"] ?? {};
     time = store["time"] ?? 0;
     derivedFields = store["derived_fields"] ?? {};
     userHash = store["user_hash"] ?? "";
@@ -66,6 +68,7 @@ class InternalStore {
     featureGates = response?["feature_gates"] ?? {};
     dynamicConfigs = response?["dynamic_configs"] ?? {};
     layerConfigs = response?["layer_configs"] ?? {};
+    paramStores = response?["param_stores"] ?? {};
     time = response?["time"] ?? 0;
     derivedFields = response?["derived_fields"] ?? {};
     userHash = user.getFullHash();
@@ -79,6 +82,7 @@ class InternalStore {
           "feature_gates": featureGates,
           "dynamic_configs": dynamicConfigs,
           "layer_configs": layerConfigs,
+          "param_stores": paramStores,
           "time": time,
           "derived_fields": derivedFields,
           "user_hash": userHash,
@@ -91,6 +95,7 @@ class InternalStore {
     featureGates = {};
     dynamicConfigs = {};
     layerConfigs = {};
+    paramStores = {};
     time = 0;
     derivedFields = {};
     userHash = "";
