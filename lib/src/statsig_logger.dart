@@ -18,6 +18,7 @@ class StatsigLogger {
   List<StatsigEvent> _queue = [];
   int _flushBatchSize = 50;
   Map<String, int> seenExposures = {};
+  Map<String, int> nonExposedChecks = {};
 
   late Timer _flushTimer;
 
@@ -92,6 +93,10 @@ class StatsigLogger {
     }
   }
 
+  void logNonExposureCheck(String name) {
+    nonExposedChecks[name] = (nonExposedChecks[name] ?? 0) + 1;
+  }
+
   void clear() {
     seenExposures = {};
   }
@@ -112,6 +117,7 @@ class StatsigLogger {
   }
 
   Future flush([bool isShuttingDown = false]) async {
+    _addNonExposedChecksEvent();
     if (_queue.isEmpty) {
       return;
     }
@@ -129,6 +135,17 @@ class StatsigLogger {
       _flushBatchSize = min(_flushBatchSize * 2, maxQueueLength);
       _queue += events;
     }
+  }
+
+  void _addNonExposedChecksEvent() {
+    if (nonExposedChecks.isEmpty) {
+      return;
+    }
+
+    var event = StatsigEvent.createNonExposedEvent(nonExposedChecks);
+    _queue.add(event);
+
+    nonExposedChecks = {};
   }
 
   Future _loadFailedLogs() async {

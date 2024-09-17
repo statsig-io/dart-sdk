@@ -50,31 +50,39 @@ class Statsig {
   }
 
   static FeatureGate getFeatureGate(String gateName,
-      [bool defaultValue = false]) {
-    return _clientInstance?.getFeatureGate(gateName, defaultValue) ??
+      [bool defaultValue = false, bool disableExposureLogging = false]) {
+    return _clientInstance?.getFeatureGate(
+            gateName, defaultValue, disableExposureLogging) ??
         FeatureGate.empty(gateName, EvaluationDetails.uninitialized());
   }
 
   /// Returns the [DynamicConfig] with the given configName.
-  static DynamicConfig getConfig(String configName) {
-    return _clientInstance?.getConfig(configName) ??
+  static DynamicConfig getConfig(String configName,
+      {bool? disableExposureLogging}) {
+    return _clientInstance?.getConfig(configName,
+            disableExposureLogging: disableExposureLogging ?? false) ??
         DynamicConfig.empty(configName, EvaluationDetails.uninitialized());
   }
 
   /// Returns the experiment with the given name as a [DynamicConfig].
-  static DynamicConfig getExperiment(String experimentName) {
-    return _clientInstance?.getConfig(experimentName) ??
+  static DynamicConfig getExperiment(String experimentName,
+      {bool? disableExposureLogging}) {
+    return _clientInstance?.getConfig(experimentName,
+            disableExposureLogging: disableExposureLogging ?? false) ??
         DynamicConfig.empty(experimentName, EvaluationDetails.uninitialized());
   }
 
   /// Returns the [Layer] with the given layerName.
-  static Layer getLayer(String layerName) {
-    return _clientInstance?.getLayer(layerName) ??
+  static Layer getLayer(String layerName, {bool? disableExposureLogging}) {
+    return _clientInstance?.getLayer(layerName,
+            disableExposureLogging: disableExposureLogging ?? false) ??
         Layer.empty(layerName, EvaluationDetails.uninitialized());
   }
 
-  static ParameterStore getParameterStore(String parameterStoreName) {
-    return _clientInstance?.getParameterStore(parameterStoreName) ??
+  static ParameterStore getParameterStore(String parameterStoreName,
+      {bool? disableExposureLogging}) {
+    return _clientInstance?.getParameterStore(
+            parameterStoreName, disableExposureLogging ?? false) ??
         ParameterStore.empty(
             parameterStoreName, EvaluationDetails.uninitialized());
   }

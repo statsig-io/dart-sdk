@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'statsig_user.dart';
 import 'evaluation_details.dart';
 
+const internalEventPrefix = "statsig::";
+const nonExposedChecksEvent = internalEventPrefix + 'non_exposed_checks';
+
 class StatsigEvent {
   String eventName;
-  StatsigUser user;
+  StatsigUser? user;
   int time = DateTime.now().millisecondsSinceEpoch;
   Map? metadata;
   List<dynamic>? exposures;
@@ -99,5 +104,10 @@ class StatsigEvent {
       String? stringValue, double? doubleValue, Map<String, String>? metadata) {
     return StatsigEvent._make(user, eventName,
         stringValue: stringValue, doubleValue: doubleValue, metadata: metadata);
+  }
+
+  static StatsigEvent createNonExposedEvent(Map<String, int> nonExposedChecks) {
+    return StatsigEvent._make(null, nonExposedChecksEvent,
+        metadata: {"checks": json.encode(nonExposedChecks)});
   }
 }

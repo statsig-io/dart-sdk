@@ -13,10 +13,13 @@ class ParameterStore {
 
   StatsigClient? client;
 
-  ParameterStore(this.client, this.name, this.details, this.value);
+  bool disableExposureLogging;
+
+  ParameterStore(this.client, this.name, this.details, this.value,
+      this.disableExposureLogging);
 
   static empty(String name, EvaluationDetails details) {
-    return ParameterStore(null, name, details, {});
+    return ParameterStore(null, name, details, {}, false);
   }
 
   T? get<T>(String key, [T? defaultValue]) {
@@ -86,7 +89,11 @@ class ParameterStore {
     if (client == null) {
       return defaultValue;
     }
-    var res = client?.checkGate(gateName);
+    var res = client?.checkGate(
+      gateName,
+      cast<bool>(defaultValue) ?? false,
+      disableExposureLogging,
+    );
     if (res == null) {
       return defaultValue;
     }
@@ -102,7 +109,8 @@ class ParameterStore {
     if (client == null) {
       return defaultValue;
     }
-    var res = client?.getConfig(expName);
+    var res = client?.getConfig(expName,
+        disableExposureLogging: disableExposureLogging);
     if (res == null) {
       return defaultValue;
     }
@@ -118,7 +126,8 @@ class ParameterStore {
     if (client == null) {
       return defaultValue;
     }
-    var res = client?.getConfig(configName);
+    var res = client?.getConfig(configName,
+        disableExposureLogging: disableExposureLogging);
     if (res == null) {
       return defaultValue;
     }
@@ -134,7 +143,8 @@ class ParameterStore {
     if (client == null) {
       return defaultValue;
     }
-    var res = client?.getLayer(layerName);
+    var res = client?.getLayer(layerName,
+        disableExposureLogging: disableExposureLogging);
     if (res == null) {
       return defaultValue;
     }
