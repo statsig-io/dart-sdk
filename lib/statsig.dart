@@ -4,6 +4,7 @@ export 'src/dynamic_config.dart' show DynamicConfig;
 export 'src/statsig_layer.dart' show Layer;
 export 'src/evaluation_details.dart' show EvaluationDetails;
 export 'src/feature_gate.dart' show FeatureGate;
+export 'src/parameter_store.dart' show ParameterStore;
 
 import 'package:meta/meta.dart';
 import 'package:statsig/src/parameter_store.dart';
