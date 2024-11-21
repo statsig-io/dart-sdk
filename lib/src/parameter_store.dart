@@ -32,29 +32,31 @@ class ParameterStore {
     if (refType == null || paramType == null) {
       return defaultValue;
     }
-    switch (paramType) {
-      case "boolean":
-        if (defaultValue is! bool) {
+    if (defaultValue != null) {
+      switch (paramType) {
+        case "boolean":
+          if (defaultValue is! bool) {
+            return defaultValue;
+          }
+        case "number":
+          if (defaultValue is! num) {
+            return defaultValue;
+          }
+        case "string":
+          if (defaultValue is! String) {
+            return defaultValue;
+          }
+        case "object":
+          if (defaultValue is! Map && defaultValue is! Record) {
+            return defaultValue;
+          }
+        case "array":
+          if (defaultValue is! List) {
+            return defaultValue;
+          }
+        default:
           return defaultValue;
-        }
-      case "number":
-        if (defaultValue is! num) {
-          return defaultValue;
-        }
-      case "string":
-        if (defaultValue is! String) {
-          return defaultValue;
-        }
-      case "object":
-        if (defaultValue is! Map && defaultValue is! Record) {
-          return defaultValue;
-        }
-      case "array":
-        if (defaultValue is! List) {
-          return defaultValue;
-        }
-      default:
-        return defaultValue;
+      }
     }
     switch (refType) {
       case "static":
