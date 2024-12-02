@@ -64,17 +64,17 @@ class StatsigEvent {
         exposures: exposures);
   }
 
-  static StatsigEvent createConfigExposure(StatsigUser user, String configName,
-      String ruleId, List<dynamic> exposures, EvaluationDetails details) {
+  static StatsigEvent createConfigExposure(StatsigUser user, String configName, EvaluationDetails details, Map? res) {
     return StatsigEvent._make(user, "statsig::config_exposure",
         metadata: {
           "config": configName,
-          "ruleID": ruleId,
+          "ruleID": res == null ? "" : res["rule_id"],
           "reason": details.reason,
           "lcut": details.lcut.toString(),
-          "receivedAt": details.receivedAt.toString()
+          "receivedAt": details.receivedAt.toString(),
+          "rulePassed": res == null ? "false" : (res["passed"] ?? false).toString()
         },
-        exposures: exposures);
+        exposures: res == null ? [] : res["secondary_exposures"] ?? []);
   }
 
   static StatsigEvent createLayerExposure(

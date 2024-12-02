@@ -56,12 +56,11 @@ class StatsigLogger {
       String configName,
       StatsigUser user,
       EvaluationDetails details,
-      String ruleID,
-      List<dynamic> secondaryExposures) {
-    var key = configName + ruleID + details.reason;
+      Map? res) {
+    var key = configName + (res == null ? "" : res["rule_id"] ?? "") + details.reason;
     if (!shouldDedupe(key)) {
       enqueue(StatsigEvent.createConfigExposure(
-          user, configName, ruleID, secondaryExposures, details));
+          user, configName, details, res));
     }
   }
 

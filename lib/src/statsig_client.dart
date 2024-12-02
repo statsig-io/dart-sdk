@@ -127,7 +127,7 @@ class StatsigClient {
 
     if (res == null) {
       if (!disableExposureLogging) {
-        _logger.logConfigExposure(configName, _user, details, "", []);
+        _logger.logConfigExposure(configName, _user, details, null);
       }
 
       return DynamicConfig.empty(configName, details);
@@ -135,8 +135,7 @@ class StatsigClient {
 
     details.reason = _getFormalEvalReason(_store.reason, EvalStatus.Recognized);
     if (!disableExposureLogging) {
-      _logger.logConfigExposure(configName, _user, details, res["rule_id"],
-          res["secondary_exposures"]);
+      _logger.logConfigExposure(configName, _user, details, res);
     }
 
     return DynamicConfig(configName, details, res["value"]);
