@@ -84,8 +84,7 @@ class StatsigClient {
 
   FeatureGate getFeatureGate(String gateName,
       [bool defaultValue = false, bool disableExposureLogging = false]) {
-    var hash = _getHash(gateName);
-    var res = _store.featureGates[hash];
+    var res = _store.featureGates[gateName] ?? _store.featureGates[_getHash(gateName)];
 
     var details = EvaluationDetails(
         _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),
@@ -113,8 +112,7 @@ class StatsigClient {
 
   DynamicConfig getConfig(String configName,
       {bool disableExposureLogging = false}) {
-    var hash = _getHash(configName);
-    Map? res = _store.dynamicConfigs[hash];
+    Map? res = _store.dynamicConfigs[configName] ?? _store.dynamicConfigs[_getHash(configName)];
 
     var details = EvaluationDetails(
         _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),
@@ -142,8 +140,7 @@ class StatsigClient {
   }
 
   Layer getLayer(String layerName, {bool disableExposureLogging = false}) {
-    var hash = _getHash(layerName);
-    Map? res = _store.layerConfigs[hash];
+    var res = _store.layerConfigs[layerName] ?? _store.layerConfigs[_getHash(layerName)];
 
     var details = EvaluationDetails(
         _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),
@@ -183,9 +180,7 @@ class StatsigClient {
 
   ParameterStore getParameterStore(
       String parameterStoreName, bool disableExposureLogging) {
-    var hash = _getHash(parameterStoreName);
-    var res =
-        _store.paramStores[hash] ?? _store.paramStores[parameterStoreName];
+    var res = _store.paramStores[parameterStoreName] ?? _store.paramStores[_getHash(parameterStoreName)];
 
     var details = EvaluationDetails(
         _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),

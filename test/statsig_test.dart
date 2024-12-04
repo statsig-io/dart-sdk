@@ -28,6 +28,11 @@ void main() {
       test('returns gate value from network', () {
         expect(Statsig.checkGate('a_gate'), true);
       });
+
+      test('returns gate value from network using hashed name', () {
+        expect(Statsig.checkGate('5v6IDYah7WmooSLkL7W3ak4pzBq5KXvJdac3tRmLnzE='), true);
+      });
+
       test('returns false by default', () {
         expect(Statsig.checkGate('no_gate'), false);
       });
@@ -39,8 +44,13 @@ void main() {
     group('Configs', () {
       test('returns config from network', () {
         var config = Statsig.getConfig("a_config");
+        expect(config.get("a_string_value"), "foo");
+        expect(config.get("a_bool_value"), true);
+        expect(config.get("a_number_value"), 420);
+      });
 
-        expect(config.name, "a_config");
+      test('returns config from network using hashed name', () {
+        var config = Statsig.getConfig("klGzwI7eIlw4LSeTwhb4C0NCIhHJrIf441Dni6g7DkE=");
         expect(config.get("a_string_value"), "foo");
         expect(config.get("a_bool_value"), true);
         expect(config.get("a_number_value"), 420);
