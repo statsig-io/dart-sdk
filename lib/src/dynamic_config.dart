@@ -20,6 +20,15 @@ class DynamicConfig {
     return value[key] ?? defaultValue;
   }
 
+  List<dynamic>? getArray(String key, [List<dynamic>? defaultValue]) {
+    return value[key] ?? defaultValue;
+  }
+
+  Map<String, dynamic>? getObject(String key,
+      [Map<String, dynamic>? defaultValue]) {
+    return value[key] ?? defaultValue;
+  }
+
   static empty(String name, EvaluationDetails details) {
     return DynamicConfig(name, details);
   }

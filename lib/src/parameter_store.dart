@@ -27,9 +27,8 @@ class ParameterStore {
     if (data == null) {
       return defaultValue;
     }
-    var refType = cast<String>(data["ref_type"]);
     var paramType = cast<String>(data["param_type"]);
-    if (refType == null || paramType == null) {
+    if (paramType == null) {
       return defaultValue;
     }
     if (defaultValue != null) {
@@ -47,7 +46,7 @@ class ParameterStore {
             return defaultValue;
           }
         case "object":
-          if (defaultValue is! Map && defaultValue is! Record) {
+          if (defaultValue is! Map) {
             return defaultValue;
           }
         case "array":
@@ -58,6 +57,46 @@ class ParameterStore {
           return defaultValue;
       }
     }
+    return _getValueFromRefType(data, defaultValue);
+  }
+
+  List<dynamic>? getArray(String key, [List<dynamic>? defaultValue]) {
+    var data = cast<Map<String, dynamic>>(value[key]);
+    if (data == null) {
+      return defaultValue;
+    }
+    var paramType = cast<String>(data["param_type"]);
+    if (paramType == null) {
+      return defaultValue;
+    }
+    if (defaultValue != null) {
+      if (paramType != "array") {
+        return defaultValue;
+      }
+    }
+    return _getValueFromRefType(data, defaultValue);
+  }
+
+  Map<String, dynamic>? getMap(String key,
+      [Map<String, dynamic>? defaultValue]) {
+    var data = cast<Map<String, dynamic>>(value[key]);
+    if (data == null) {
+      return defaultValue;
+    }
+    var paramType = cast<String>(data["param_type"]);
+    if (paramType == null) {
+      return defaultValue;
+    }
+    if (defaultValue != null) {
+      if (paramType != "object") {
+        return defaultValue;
+      }
+    }
+    return _getValueFromRefType(data, defaultValue);
+  }
+
+  T? _getValueFromRefType<T>(Map<String, dynamic> data, [T? defaultValue]) {
+    var refType = cast<String>(data["ref_type"]);
     switch (refType) {
       case "static":
         return _evalStatic(data["value"], defaultValue);
@@ -75,10 +114,7 @@ class ParameterStore {
   }
 
   T? _evalStatic<T>(dynamic value, [T? defaultValue]) {
-    if (value is T) {
-      return value;
-    }
-    return defaultValue;
+    return value ?? defaultValue;
   }
 
   T? _evalGate<T>(Map<String, dynamic> param, [T? defaultValue]) {
