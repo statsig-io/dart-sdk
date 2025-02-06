@@ -25,6 +25,7 @@ class InternalStore {
   String userHash = "";
   String hashUsed = "";
   EvalReason reason = EvalReason.Uninitialized;
+  String? fullChecksum;
 
   int getSinceTime(StatsigUser user) {
     if (userHash != user.getFullHash()) {
@@ -38,6 +39,13 @@ class InternalStore {
       return {};
     }
     return derivedFields;
+  }
+
+  String? getFullChecksum(StatsigUser user) {
+    if (userHash != user.getFullHash()) {
+      return null;
+    }
+    return fullChecksum;
   }
 
   Future<void> load(StatsigUser user) async {
@@ -55,6 +63,7 @@ class InternalStore {
     userHash = store["user_hash"] ?? "";
     hashUsed = store["hash_used"] ?? "";
     receivedAt = store["receivedAt"] ?? 0;
+    fullChecksum = store["fullChecksum"];
     reason = EvalReason.Cache;
   }
 
@@ -75,6 +84,7 @@ class InternalStore {
     hashUsed = response?["hash_used"] ?? "";
     reason = EvalReason.Network;
     receivedAt = DateTime.now().millisecondsSinceEpoch;
+    fullChecksum = response?["full_checksum"];
 
     await _write(
         user,
@@ -88,6 +98,7 @@ class InternalStore {
           "user_hash": userHash,
           "hash_used": hashUsed,
           "receivedAt": receivedAt,
+          "fullChecksum": fullChecksum,
         }));
   }
 
@@ -102,6 +113,7 @@ class InternalStore {
     hashUsed = "";
     reason = EvalReason.Uninitialized;
     receivedAt = 0;
+    fullChecksum = null;
   }
 
   Future<void> _write(StatsigUser user, String content) async {

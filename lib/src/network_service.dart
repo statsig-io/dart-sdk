@@ -50,6 +50,7 @@ class NetworkService {
               "sinceTime": store.getSinceTime(user),
               "previousDerivedFields": store.getPreviousDerivedFields(user),
               "hash": 'djb2',
+              "full_checksum": store.getFullChecksum(user),
             },
             3,
             initialBackoffSeconds)
