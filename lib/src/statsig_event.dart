@@ -20,7 +20,7 @@ class StatsigEvent {
 
   StatsigEvent.fromJson(Map<String, dynamic> json)
       : eventName = json["eventName"],
-        user = StatsigUser.fromJson(json["user"]),
+        user = json["user"] == null ? null : StatsigUser.fromJson(json["user"]),
         time = json["time"],
         exposures = json["secondaryExposures"],
         metadata = json["metadata"],
@@ -64,7 +64,8 @@ class StatsigEvent {
         exposures: exposures);
   }
 
-  static StatsigEvent createConfigExposure(StatsigUser user, String configName, EvaluationDetails details, Map? res) {
+  static StatsigEvent createConfigExposure(StatsigUser user, String configName,
+      EvaluationDetails details, Map? res) {
     return StatsigEvent._make(user, "statsig::config_exposure",
         metadata: {
           "config": configName,
@@ -72,7 +73,8 @@ class StatsigEvent {
           "reason": details.reason,
           "lcut": details.lcut.toString(),
           "receivedAt": details.receivedAt.toString(),
-          "rulePassed": res == null ? "false" : (res["passed"] ?? false).toString()
+          "rulePassed":
+              res == null ? "false" : (res["passed"] ?? false).toString()
         },
         exposures: res == null ? [] : res["secondary_exposures"] ?? []);
   }
