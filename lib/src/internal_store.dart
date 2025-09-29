@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:statsig/src/dynamic_config.dart';
+import 'package:statsig/statsig.dart';
+
 import 'disk_util/disk_util.dart';
 import 'statsig_user.dart';
 
@@ -26,6 +29,8 @@ class InternalStore {
   String hashUsed = "";
   EvalReason reason = EvalReason.Uninitialized;
   String? fullChecksum;
+  Map exposures = {};
+  Map values = {};
 
   int getSinceTime(StatsigUser user) {
     if (userHash != user.getFullHash()) {
@@ -48,6 +53,124 @@ class InternalStore {
     return fullChecksum;
   }
 
+  FeatureGate getFeatureGate(
+      String name, String hashedName, bool defaultValue) {
+    var gate = featureGates[name] ?? featureGates[hashedName];
+    if (gate == null) {
+      var details = EvaluationDetails(
+          _getFormalEvalReason(reason, EvalStatus.Unrecognized),
+          time,
+          receivedAt);
+      return FeatureGate(name, details, defaultValue, "", []);
+    }
+
+    var details = EvaluationDetails(
+        _getFormalEvalReason(reason, EvalStatus.Recognized), time, receivedAt);
+    var secondaryExposures = mapSecondaryExposures(
+            gate["s"] == null ? null : List<String>.from(gate["s"])) ??
+        gate["secondary_exposures"] ??
+        [];
+    return FeatureGate(
+        name,
+        details,
+        gate["v"] ?? gate["value"] ?? false,
+        gate["r"] ?? gate["rule_id"] ?? "default",
+        secondaryExposures,
+        gate["i"] ?? gate["id_type"] ?? "");
+  }
+
+  DynamicConfig getDynamicConfig(
+    String name,
+    String hashedName,
+  ) {
+    var config = dynamicConfigs[name] ?? dynamicConfigs[hashedName];
+    if (config == null) {
+      var details = EvaluationDetails(
+          _getFormalEvalReason(reason, EvalStatus.Unrecognized),
+          time,
+          receivedAt);
+      return DynamicConfig(name, details);
+    }
+
+    var details = EvaluationDetails(
+        _getFormalEvalReason(reason, EvalStatus.Recognized), time, receivedAt);
+    return DynamicConfig(
+      name,
+      details,
+      getValue(config["v"]) ?? config["value"] ?? {},
+      config["gn"] ?? config["group_name"],
+      mapSecondaryExposures(
+              config["s"] == null ? null : List<String>.from(config["s"])) ??
+          config["secondary_exposures"] ??
+          [],
+      config["ea"] ?? config["is_experiment_active"] ?? false,
+      config["p"] ?? config["passed"] ?? false,
+      config["r"] ?? config["rule_id"] ?? "default",
+      config["i"] ?? config["id_type"] ?? "",
+    );
+  }
+
+  Layer getLayer(
+      String name, String hashedName, Function(Layer, String) onExposure) {
+    var layer = layerConfigs[name] ?? layerConfigs[hashedName];
+    if (layer == null) {
+      var details = EvaluationDetails(
+          _getFormalEvalReason(reason, EvalStatus.Unrecognized),
+          time,
+          receivedAt);
+      return Layer.empty(name, details);
+    }
+
+    var details = EvaluationDetails(
+        _getFormalEvalReason(reason, EvalStatus.Recognized), time, receivedAt);
+    return Layer(
+      name,
+      details,
+      getValue(layer["v"]) ?? layer["value"] ?? {},
+      onExposure,
+      layer["r"] ?? layer["rule_id"] ?? "default",
+      layer["gn"] ?? layer["group_name"] ?? "",
+      mapSecondaryExposures(
+              layer["s"] == null ? null : List<String>.from(layer["s"])) ??
+          layer["secondary_exposures"] ??
+          [],
+      mapSecondaryExposures(
+              layer["us"] == null ? null : List<String>.from(layer["us"])) ??
+          layer["undelegated_secondary_exposures"] ??
+          [],
+      layer["ae"] ?? layer["allocated_experiment_name"] ?? "",
+      layer["ea"] ?? layer["is_experiment_active"] ?? false,
+      (layer["ep"] ?? layer["explicit_parameters"] ?? []).cast<String>(),
+      layer["pr"] ?? layer["parameter_rule_ids"] ?? {},
+      layer["i"] ?? layer["id_type"] ?? "",
+    );
+  }
+
+  String _getFormalEvalReason(EvalReason reason, EvalStatus status) {
+    if (reason == EvalReason.Uninitialized || reason == EvalReason.NoValues) {
+      return reason.name;
+    }
+
+    return reason.name + ":" + status.name;
+  }
+
+  List<dynamic>? mapSecondaryExposures(List<String>? secondaryExposures) {
+    if (secondaryExposures == null) {
+      return null;
+    }
+    var mapped = secondaryExposures.map((se) {
+      return exposures[se];
+    }).toList();
+    return mapped;
+  }
+
+  Map<String, dynamic>? getValue(String? key) {
+    if (key == null) {
+      return null;
+    }
+    return values[key];
+  }
+
   Future<void> load(StatsigUser user) async {
     var store = await _read(user);
     if (store == null) {
@@ -64,6 +187,8 @@ class InternalStore {
     hashUsed = store["hash_used"] ?? "";
     receivedAt = store["receivedAt"] ?? 0;
     fullChecksum = store["fullChecksum"];
+    exposures = store["exposures"] ?? {};
+    values = store["values"] ?? {};
     reason = EvalReason.Cache;
   }
 
@@ -85,6 +210,8 @@ class InternalStore {
     reason = EvalReason.Network;
     receivedAt = DateTime.now().millisecondsSinceEpoch;
     fullChecksum = response?["full_checksum"];
+    exposures = response?["exposures"] ?? {};
+    values = response?["values"] ?? {};
 
     await _write(
         user,
@@ -99,6 +226,8 @@ class InternalStore {
           "hash_used": hashUsed,
           "receivedAt": receivedAt,
           "fullChecksum": fullChecksum,
+          "exposures": exposures,
+          "values": values,
         }));
   }
 
@@ -114,6 +243,8 @@ class InternalStore {
     reason = EvalReason.Uninitialized;
     receivedAt = 0;
     fullChecksum = null;
+    exposures = {};
+    values = {};
   }
 
   Future<void> _write(StatsigUser user, String content) async {

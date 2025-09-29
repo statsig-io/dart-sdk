@@ -7,10 +7,32 @@ class DynamicConfig {
   /// The loaded values of this DynamicConfig for the current user.
   Map<String, dynamic> value;
 
+  final String? groupName;
+
+  final List<dynamic> secondaryExposures;
+
+  final bool isExperimentActive;
+
+  final bool passed;
+
+  final String? ruleID;
+
+  final String idType;
+
   /// Metadata about how this value was recieved.
   EvaluationDetails details;
 
-  DynamicConfig(this.name, this.details, [this.value = const {}]);
+  DynamicConfig(
+    this.name,
+    this.details, [
+    this.value = const {},
+    this.groupName,
+    this.secondaryExposures = const [],
+    this.isExperimentActive = false,
+    this.passed = false,
+    this.ruleID,
+    this.idType = "",
+  ]);
 
   /// Gets a value from the DynamicConfig
   ///

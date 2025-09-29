@@ -84,103 +84,71 @@ class StatsigClient {
 
   FeatureGate getFeatureGate(String gateName,
       [bool defaultValue = false, bool disableExposureLogging = false]) {
-    var res = _store.featureGates[gateName] ?? _store.featureGates[_getHash(gateName)];
-
-    var details = EvaluationDetails(
-        _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),
-        _store.time,
-        _store.receivedAt);
+    var res = _store.getFeatureGate(gateName, _getHash(gateName), defaultValue);
 
     if (disableExposureLogging) {
       _logger.logNonExposureCheck(gateName);
     }
 
-    if (res == null) {
-      if (!disableExposureLogging) {
-        _logger.logGateExposure(gateName, _user, details, defaultValue, "", []);
-      }
-      return FeatureGate(gateName, details, defaultValue);
-    }
-
-    details.reason = _getFormalEvalReason(_store.reason, EvalStatus.Recognized);
     if (!disableExposureLogging) {
-      _logger.logGateExposure(gateName, _user, details, res["value"],
-          res["rule_id"], res["secondary_exposures"]);
+      _logger.logGateExposure(gateName, _user, res.details, res.value,
+          res.ruleID, res.secondaryExposures);
     }
-    return FeatureGate(gateName, details, res["value"]);
+    return res;
   }
 
   DynamicConfig getConfig(String configName,
       {bool disableExposureLogging = false}) {
-    Map? res = _store.dynamicConfigs[configName] ?? _store.dynamicConfigs[_getHash(configName)];
-
-    var details = EvaluationDetails(
-        _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),
-        _store.time,
-        _store.receivedAt);
+    var res = _store.getDynamicConfig(configName, _getHash(configName));
 
     if (disableExposureLogging) {
       _logger.logNonExposureCheck(configName);
     }
 
-    if (res == null) {
-      if (!disableExposureLogging) {
-        _logger.logConfigExposure(configName, _user, details, null);
-      }
-
-      return DynamicConfig.empty(configName, details);
-    }
-
-    details.reason = _getFormalEvalReason(_store.reason, EvalStatus.Recognized);
     if (!disableExposureLogging) {
-      _logger.logConfigExposure(configName, _user, details, res);
+      _logger.logConfigExposure(configName, _user, res.details, res);
     }
-
-    return DynamicConfig(configName, details, res["value"]);
+    return res;
   }
 
   Layer getLayer(String layerName, {bool disableExposureLogging = false}) {
-    var res = _store.layerConfigs[layerName] ?? _store.layerConfigs[_getHash(layerName)];
-
-    var details = EvaluationDetails(
-        _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),
-        _store.time,
-        _store.receivedAt);
-    if (disableExposureLogging) {
-      _logger.logNonExposureCheck(layerName);
-    }
-
-    if (res == null) {
-      return Layer.empty(layerName, details);
-    }
-
-    String ruleId = res["rule_id"];
-    details.reason = _getFormalEvalReason(_store.reason, EvalStatus.Recognized);
-
     onExposure(Layer layer, String parameterName) {
       if (disableExposureLogging) {
         return;
       }
       var allocatedExperiment = "";
       bool isExplicit =
-          (res["explicit_parameters"] ?? []).contains(parameterName);
-      List exposures = res["undelegated_secondary_exposures"] ?? [];
+          (layer.explicitParameters ?? []).contains(parameterName);
+      List exposures = layer.undelegatedSecondaryExposures;
 
       if (isExplicit) {
-        allocatedExperiment = res["allocated_experiment_name"];
-        exposures = res["secondary_exposures"] ?? [];
+        allocatedExperiment = layer.allocatedExperiment ?? "";
+        exposures = layer.secondaryExposures;
       }
 
-      _logger.logLayerExposure(layerName, _user, details, ruleId, exposures,
-          isExplicit, allocatedExperiment, parameterName);
+      _logger.logLayerExposure(
+          layerName,
+          _user,
+          layer.details,
+          layer.ruleID ?? "",
+          exposures,
+          isExplicit,
+          allocatedExperiment,
+          parameterName);
     }
 
-    return Layer(layerName, details, res["value"], onExposure);
+    var res = _store.getLayer(layerName, _getHash(layerName), onExposure);
+    if (disableExposureLogging) {
+      _logger.logNonExposureCheck(layerName);
+    }
+
+    return res;
   }
 
   ParameterStore getParameterStore(
       String parameterStoreName, bool disableExposureLogging) {
-    var res = _store.paramStores[parameterStoreName] ?? _store.paramStores[_getHash(parameterStoreName)];
+    var res = _store.paramStores[parameterStoreName] ??
+        _store.paramStores[_getHash(parameterStoreName)];
 
     var details = EvaluationDetails(
         _getFormalEvalReason(_store.reason, EvalStatus.Unrecognized),

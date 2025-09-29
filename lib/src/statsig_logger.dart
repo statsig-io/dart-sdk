@@ -53,9 +53,8 @@ class StatsigLogger {
   }
 
   void logConfigExposure(String configName, StatsigUser user,
-      EvaluationDetails details, Map? res) {
-    var key =
-        configName + (res == null ? "" : res["rule_id"] ?? "") + details.reason;
+      EvaluationDetails details, DynamicConfig res) {
+    var key = configName + (res.ruleID ?? "") + details.reason;
     if (!shouldDedupe(key)) {
       enqueue(
           StatsigEvent.createConfigExposure(user, configName, details, res));

@@ -9,9 +9,28 @@ class Layer {
 
   final Map<String, dynamic> _value;
   final Function(Layer, String) _onParamExposure;
+  final String? ruleID;
+  final String? groupName;
+  final List<dynamic> secondaryExposures;
+  final List<dynamic> undelegatedSecondaryExposures;
+  final bool isExperimentActive;
+  final String? allocatedExperiment;
+  final List<String>? explicitParameters;
+  final Map<String, String> parameterRuleIDs;
+  final String idType;
 
   Layer(this.name, this.details,
-      [this._value = const {}, this._onParamExposure = noop]);
+      [this._value = const {},
+      this._onParamExposure = noop,
+      this.ruleID = "",
+      this.groupName,
+      this.secondaryExposures = const [],
+      this.undelegatedSecondaryExposures = const [],
+      this.allocatedExperiment,
+      this.isExperimentActive = false,
+      this.explicitParameters = const [],
+      this.parameterRuleIDs = const {},
+      this.idType = ""]);
 
   /// Gets a value from the Layer
   ///

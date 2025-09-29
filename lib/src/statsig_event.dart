@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:statsig/statsig.dart';
+
 import 'statsig_user.dart';
 import 'evaluation_details.dart';
 
@@ -65,18 +67,17 @@ class StatsigEvent {
   }
 
   static StatsigEvent createConfigExposure(StatsigUser user, String configName,
-      EvaluationDetails details, Map? res) {
+      EvaluationDetails details, DynamicConfig res) {
     return StatsigEvent._make(user, "statsig::config_exposure",
         metadata: {
           "config": configName,
-          "ruleID": res == null ? "" : res["rule_id"],
+          "ruleID": res.ruleID,
           "reason": details.reason,
           "lcut": details.lcut.toString(),
           "receivedAt": details.receivedAt.toString(),
-          "rulePassed":
-              res == null ? "false" : (res["passed"] ?? false).toString()
+          "rulePassed": res.passed.toString()
         },
-        exposures: res == null ? [] : res["secondary_exposures"] ?? []);
+        exposures: res.secondaryExposures);
   }
 
   static StatsigEvent createLayerExposure(
