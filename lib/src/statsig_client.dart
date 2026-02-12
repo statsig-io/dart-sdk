@@ -71,6 +71,7 @@ class StatsigClient {
       _store.clear();
       _logger.clear();
     }
+    await _logger.flush();
     _user = user.normalize(_options);
     StatsigMetadata.regenSessionID();
 
