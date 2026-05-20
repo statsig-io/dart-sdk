@@ -87,13 +87,12 @@ class StatsigUser {
   }
 
   String getCacheKey() {
-    var key = this.userId.isNotEmpty
-        ? "userID:" + this.userId
-        : "userID:STATSIG_NULL_USER";
-    if (this.customIds != null) {
-      var sortedKeys = this.customIds!.keys.toList()..sort();
+    var key =
+        userId.isNotEmpty ? "userID:" + userId : "userID:STATSIG_NULL_USER";
+    if (customIds != null) {
+      var sortedKeys = customIds!.keys.toList()..sort();
       for (var i = 0; i < sortedKeys.length; i++) {
-        key += sortedKeys[i] + ":" + this.customIds![sortedKeys[i]]!;
+        key += sortedKeys[i] + ":" + customIds![sortedKeys[i]]!;
       }
     }
     return Utils.djb2(key);

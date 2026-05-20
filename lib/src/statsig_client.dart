@@ -17,7 +17,7 @@ import 'evaluation_details.dart';
 
 extension NormalizedStatsigUser on StatsigUser {
   StatsigUser normalize(StatsigOptions? options) {
-    var json = this.toJsonWithPrivateAttributes();
+    var json = toJsonWithPrivateAttributes();
     if (options != null) {
       json = json
         ..addAll(options.environment == null

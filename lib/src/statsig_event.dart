@@ -1,9 +1,8 @@
 import 'dart:convert';
 
-import 'package:statsig/statsig.dart';
-
 import 'statsig_user.dart';
 import 'evaluation_details.dart';
+import 'dynamic_config.dart';
 
 const internalEventPrefix = "statsig::";
 const nonExposedChecksEvent = internalEventPrefix + 'non_exposed_checks';

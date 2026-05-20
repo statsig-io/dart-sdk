@@ -1,7 +1,9 @@
 name: statsig
 description: Statsig SDK for Dart. Statsig enables developers to ship code faster and more safely.
 version: 1.2.7
-homepage: https://statsig.com
+homepage: https://www.statsig.com/
+repository: https://github.com/statsig-io/dart-sdk
+
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

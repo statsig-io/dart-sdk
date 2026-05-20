@@ -1,20 +1,28 @@
 import 'dart:convert';
 
-import 'package:statsig/src/dynamic_config.dart';
-import 'package:statsig/statsig.dart';
-
 import 'disk_util/disk_util.dart';
+import 'dynamic_config.dart';
+import 'evaluation_details.dart';
+import 'feature_gate.dart';
+import 'statsig_layer.dart';
 import 'statsig_user.dart';
 
 enum EvalReason {
+  // ignore: constant_identifier_names
   Loading,
+  // ignore: constant_identifier_names
   NetworkNotModified,
+  // ignore: constant_identifier_names
   Network,
+  // ignore: constant_identifier_names
   Cache,
+  // ignore: constant_identifier_names
   Uninitialized,
+  // ignore: constant_identifier_names
   NoValues
 }
 
+// ignore: constant_identifier_names
 enum EvalStatus { Recognized, Unrecognized }
 
 class InternalStore {

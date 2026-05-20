@@ -31,8 +31,8 @@ void main() {
 
     group("auto generated stable id", () {
       test('a new uuid is generated', () async {
-        String? original =
-            await DiskUtil.instance.read("statsig_stable_id", destroyAfterReading: true);
+        String? original = await DiskUtil.instance
+            .read("statsig_stable_id", destroyAfterReading: true);
         await Statsig.initialize('a-key');
         String? current = await DiskUtil.instance.read("statsig_stable_id");
         expect(current, isNot(original));
@@ -50,12 +50,14 @@ void main() {
 
     group("overriding stable id", () {
       setUp(() async {
-        await DiskUtil.instance.read("statsig_stable_id", destroyAfterReading: true);
+        await DiskUtil.instance
+            .read("statsig_stable_id", destroyAfterReading: true);
         await Statsig.initialize(
             'a-key', null, StatsigOptions(overrideStableID: "my_custom_id"));
 
         var end = DateTime.now().add(Duration(milliseconds: 100));
-        while ((await DiskUtil.instance.read("statsig_stable_id")).isEmpty && DateTime.now().isBefore(end)) { }
+        while ((await DiskUtil.instance.read("statsig_stable_id")).isEmpty &&
+            DateTime.now().isBefore(end)) {}
       });
 
       test('saves override to disk', () async {
