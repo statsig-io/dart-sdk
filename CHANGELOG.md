@@ -1,1 +1,1 @@
-Visit https://github.com/statsig-io/dart-sdk/releases to view the changelog.
+For older releases, visit https://github.com/statsig-io/dart-sdk/releases.
