@@ -4,7 +4,7 @@ import 'os_util/os_util.dart';
 
 abstract class StatsigMetadata {
   static String getSDKVersion() {
-    return "1.2.7";
+    return "1.2.8";
   }
 
   static String getSDKType() {
