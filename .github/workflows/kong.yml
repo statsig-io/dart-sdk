@@ -16,7 +16,7 @@ jobs:
         run: |
           git clone https://${{ secrets.KONG_FINE_GRAINED_REPO_PAT }}@github.com/statsig-io/kong.git
 
-      - uses: dart-lang/setup-dart@v1.3
+      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d # v1.3
 
       - name: Setup Dart Server
         run: |
