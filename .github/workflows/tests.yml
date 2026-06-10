@@ -18,4 +18,6 @@ jobs:
       - name: Run Tests
         run: |
           dart pub get
-          dart test --reporter=expanded
+          # Test files share the SDK's global disk state (failed_events.json,
+          # statsig_stable_id), so concurrent suites race against each other.
+          dart test --reporter=expanded --concurrency=1

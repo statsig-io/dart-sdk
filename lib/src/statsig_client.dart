@@ -69,6 +69,9 @@ class StatsigClient {
     var isSameUser = user.getCacheKey() == _user.getCacheKey();
     if (!isSameUser) {
       _store.clear();
+      // Mark the store as Loading synchronously so evaluations made before
+      // the new user's fetch completes never report Uninitialized.
+      _store.reason = EvalReason.Loading;
       _logger.clear();
     }
     await _logger.flush();
@@ -178,10 +181,15 @@ class StatsigClient {
     if (shouldLoadCache) {
       await _store.load(_user);
     }
+    if (_store.reason == EvalReason.Uninitialized ||
+        _store.reason == EvalReason.NoValues) {
+      _store.reason = EvalReason.Loading;
+    }
     var res = await _network.initialize(_user, _store);
     if (res is Map) {
       if (res["hashed_sdk_key_used"] != null) {
         if (res["hashed_sdk_key_used"] != Utils.djb2(_sdkKey)) {
+          _store.finalize();
           return;
         }
       }
