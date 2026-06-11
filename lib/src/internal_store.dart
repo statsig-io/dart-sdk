@@ -180,7 +180,16 @@ class InternalStore {
   }
 
   Future<void> load(StatsigUser user) async {
-    var store = await _read(user);
+    applyCache(await readCache(user));
+  }
+
+  /// Reads a user's persisted values without touching the live store, so the
+  /// caller can decide whether the result is still relevant before applying.
+  Future<Map?> readCache(StatsigUser user) async {
+    return await _read(user);
+  }
+
+  void applyCache(Map? store) {
     if (store == null) {
       return;
     }

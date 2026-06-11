@@ -39,6 +39,11 @@ class StatsigClient {
   late StatsigLogger _logger;
   late InternalStore _store;
 
+  // Incremented synchronously by every updateUser. In-flight fetches capture
+  // the value at their start and re-check it after each await, so a fetch
+  // superseded by a newer updateUser stops before mutating the store.
+  int _userGeneration = 0;
+
   StatsigClient._make(this._sdkKey,
       [StatsigUser? user, StatsigOptions? options]) {
     _user = user ?? StatsigUser();
@@ -53,7 +58,7 @@ class StatsigClient {
     await StatsigMetadata.loadStableID(options?.overrideStableID);
 
     var client = StatsigClient._make(sdkKey, user?.normalize(options), options);
-    await client._fetchInitialValues();
+    await client._fetchInitialValues(client._userGeneration);
     return client;
   }
 
@@ -66,19 +71,24 @@ class StatsigClient {
   }
 
   Future updateUser(StatsigUser user) async {
-    var isSameUser = user.getCacheKey() == _user.getCacheKey();
-    if (!isSameUser) {
-      _store.clear();
-      // Mark the store as Loading synchronously so evaluations made before
-      // the new user's fetch completes never report Uninitialized.
-      _store.reason = EvalReason.Loading;
-      _logger.clear();
-    }
+    var generation = ++_userGeneration;
+    // Reset and reload on every updateUser, even for the same user, so the
+    // call is always a fresh refetch (matching the other Statsig SDKs) rather
+    // than a silent no-op. Marking the store Loading synchronously here means
+    // evaluations made before the fetch completes report Loading, never the
+    // stale value or Uninitialized.
+    _store.clear();
+    _store.reason = EvalReason.Loading;
+    _logger.clear();
     await _logger.flush();
+    if (generation != _userGeneration) {
+      // A newer updateUser superseded this one while events were flushing.
+      return;
+    }
     _user = user.normalize(_options);
     StatsigMetadata.regenSessionID();
 
-    await _fetchInitialValues(shouldLoadCache: !isSameUser);
+    await _fetchInitialValues(generation);
   }
 
   bool checkGate(String gateName,
@@ -177,15 +187,26 @@ class StatsigClient {
     return;
   }
 
-  Future<void> _fetchInitialValues({bool shouldLoadCache = true}) async {
-    if (shouldLoadCache) {
-      await _store.load(_user);
+  Future<void> _fetchInitialValues(int generation) async {
+    var requestUser = _user;
+    var cached = await _store.readCache(requestUser);
+    if (generation != _userGeneration) {
+      // A newer updateUser cleared the store while the cache was being
+      // read; applying this user's values now would contaminate it.
+      return;
     }
+    _store.applyCache(cached);
     if (_store.reason == EvalReason.Uninitialized ||
         _store.reason == EvalReason.NoValues) {
       _store.reason = EvalReason.Loading;
     }
-    var res = await _network.initialize(_user, _store);
+    var res = await _network.initialize(requestUser, _store);
+    if (generation != _userGeneration) {
+      // A newer updateUser took over while this request was in flight;
+      // discard the response so it can't overwrite the new user's state.
+      return;
+    }
+
     if (res is Map) {
       if (res["hashed_sdk_key_used"] != null) {
         if (res["hashed_sdk_key_used"] != Utils.djb2(_sdkKey)) {
@@ -194,7 +215,7 @@ class StatsigClient {
         }
       }
       if (res["has_updates"] == true) {
-        _store.save(_user, res);
+        _store.save(requestUser, res);
       } else if (res["has_updates"] == false) {
         _store.reason = EvalReason.NetworkNotModified;
       }
