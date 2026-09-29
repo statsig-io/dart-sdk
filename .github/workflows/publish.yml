@@ -15,7 +15,7 @@ jobs:
       contents: read # Required to checkout the repo
 
     environment: pub.dev
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
 
     steps:
       - name: Checkout
