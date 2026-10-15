@@ -14,6 +14,8 @@ import 'statsig_user.dart';
 import 'statsig_event.dart';
 import 'dynamic_config.dart';
 import 'evaluation_details.dart';
+import 'diagnostics.dart';
+import 'diagnostics_types.dart';
 
 extension NormalizedStatsigUser on StatsigUser {
   StatsigUser normalize(StatsigOptions? options) {
@@ -28,6 +30,16 @@ extension NormalizedStatsigUser on StatsigUser {
     }
     return StatsigUser.fromJson(json);
   }
+}
+
+class _InitialValuesResult {
+  final Map? response;
+  final bool success;
+  final DiagnosticsError? error;
+  final DiagnosticsEvaluationDetails? evaluationDetails;
+
+  const _InitialValuesResult(this.response, this.success,
+      {this.error, this.evaluationDetails});
 }
 
 class StatsigClient {
@@ -58,7 +70,20 @@ class StatsigClient {
     await StatsigMetadata.loadStableID(options?.overrideStableID);
 
     var client = StatsigClient._make(sdkKey, user?.normalize(options), options);
-    await client._fetchInitialValues(client._userGeneration);
+    var diagnostics =
+        Diagnostics(DiagnosticsContext.initialize, client._options);
+    diagnostics.mark(DiagnosticsKey.overall, DiagnosticsAction.start);
+    var result =
+        await client._fetchInitialValues(client._userGeneration, diagnostics);
+    diagnostics.mark(DiagnosticsKey.overall, DiagnosticsAction.end,
+        success: result.success,
+        error: result.error,
+        evaluationDetails: result.evaluationDetails);
+    if (diagnostics.shouldLog(result.response)) {
+      client._logger
+          .logDiagnostics(DiagnosticsContext.initialize, diagnostics.markers);
+    }
+    diagnostics.clear();
     return client;
   }
 
@@ -187,41 +212,88 @@ class StatsigClient {
     return;
   }
 
-  Future<void> _fetchInitialValues(int generation) async {
+  Future<_InitialValuesResult> _fetchInitialValues(int generation,
+      [Diagnostics? diagnostics]) async {
     var requestUser = _user;
+    diagnostics?.mark(DiagnosticsKey.initialize, DiagnosticsAction.start,
+        step: DiagnosticsStep.loadCache);
     var cached = await _store.readCache(requestUser);
+    diagnostics?.mark(DiagnosticsKey.initialize, DiagnosticsAction.end,
+        step: DiagnosticsStep.loadCache, success: true);
     if (generation != _userGeneration) {
       // A newer updateUser cleared the store while the cache was being
       // read; applying this user's values now would contaminate it.
-      return;
+      return const _InitialValuesResult(null, false);
     }
     _store.applyCache(cached);
     if (_store.reason == EvalReason.Uninitialized ||
         _store.reason == EvalReason.NoValues) {
       _store.reason = EvalReason.Loading;
     }
-    var res = await _network.initialize(requestUser, _store);
+    DiagnosticsError? networkError;
+    var res = await _network.initialize(requestUser, _store,
+        onFailure: (error) => networkError = error,
+        diagnostics: (attempt, isStart, success, statusCode, sdkRegion, error) {
+          diagnostics?.mark(DiagnosticsKey.initialize,
+              isStart ? DiagnosticsAction.start : DiagnosticsAction.end,
+              step: DiagnosticsStep.networkRequest,
+              attempt: attempt,
+              success: success,
+              statusCode: statusCode,
+              sdkRegion: sdkRegion,
+              error: error);
+        });
     if (generation != _userGeneration) {
       // A newer updateUser took over while this request was in flight;
       // discard the response so it can't overwrite the new user's state.
-      return;
+      return const _InitialValuesResult(null, false);
     }
 
-    if (res is Map) {
-      if (res["hashed_sdk_key_used"] != null) {
-        if (res["hashed_sdk_key_used"] != Utils.djb2(_sdkKey)) {
-          _store.finalize();
-          return;
-        }
-      }
-      if (res["has_updates"] == true) {
-        _store.save(requestUser, res);
-      } else if (res["has_updates"] == false) {
-        _store.reason = EvalReason.NetworkNotModified;
-      }
+    if (res == null) {
+      _store.finalize();
+      return _completeInitialValues(null, false, error: networkError);
+    }
+
+    diagnostics?.mark(DiagnosticsKey.initialize, DiagnosticsAction.start,
+        step: DiagnosticsStep.process);
+    if (res["hashed_sdk_key_used"] != null &&
+        res["hashed_sdk_key_used"] != Utils.djb2(_sdkKey)) {
+      const error = DiagnosticsError(DiagnosticsErrorName.sdkKeyMismatch,
+          'Initialize response did not match the SDK key');
+      _store.finalize();
+      diagnostics?.mark(DiagnosticsKey.initialize, DiagnosticsAction.end,
+          step: DiagnosticsStep.process, success: false, error: error);
+      return _completeInitialValues(res, false, error: error);
+    }
+    if (res["has_updates"] == true) {
+      // save applies memory values before awaiting its asynchronous disk write.
+      // Keep the existing completion boundary: process does not measure durability.
+      _store.save(requestUser, res);
+    } else if (res["has_updates"] == false) {
+      _store.reason = EvalReason.NetworkNotModified;
     }
 
     _store.finalize();
+    diagnostics?.mark(DiagnosticsKey.initialize, DiagnosticsAction.end,
+        step: DiagnosticsStep.process, success: true);
+    return _completeInitialValues(res, true);
+  }
+
+  _InitialValuesResult _completeInitialValues(Map? response, bool success,
+      {DiagnosticsError? error}) {
+    final reason = switch (_store.reason) {
+      EvalReason.Loading => DiagnosticsEvaluationReason.loading,
+      EvalReason.NetworkNotModified =>
+        DiagnosticsEvaluationReason.networkNotModified,
+      EvalReason.Network => DiagnosticsEvaluationReason.network,
+      EvalReason.Cache => DiagnosticsEvaluationReason.cache,
+      EvalReason.Uninitialized => DiagnosticsEvaluationReason.uninitialized,
+      EvalReason.NoValues => DiagnosticsEvaluationReason.noValues,
+    };
+    return _InitialValuesResult(response, success,
+        error: error,
+        evaluationDetails: DiagnosticsEvaluationDetails(
+            reason, _store.time, _store.receivedAt));
   }
 
   String _getHash(String input) {
