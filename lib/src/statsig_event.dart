@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'diagnostics_types.dart';
+
 import 'statsig_user.dart';
 import 'evaluation_details.dart';
 import 'dynamic_config.dart';
@@ -111,5 +113,13 @@ class StatsigEvent {
   static StatsigEvent createNonExposedEvent(Map<String, int> nonExposedChecks) {
     return StatsigEvent._make(null, nonExposedChecksEvent,
         metadata: {"checks": json.encode(nonExposedChecks)});
+  }
+
+  static StatsigEvent createDiagnostics(
+      DiagnosticsContext context, List<Map<String, dynamic>> markers) {
+    return StatsigEvent._make(null, DiagnosticsWire.eventName, metadata: {
+      DiagnosticsWire.context: context.wireValue,
+      DiagnosticsWire.markers: json.encode(markers),
+    });
   }
 }

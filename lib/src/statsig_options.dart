@@ -10,10 +10,12 @@ class StatsigOptions {
 
   /// Overrides the auto generated StableID that is set for the device
   String? overrideStableID;
+  bool forceDiagnosticsSampling;
 
   StatsigOptions(
       {this.api,
       this.initTimeout = 3,
       this.environment,
-      this.overrideStableID});
+      this.overrideStableID,
+      this.forceDiagnosticsSampling = false});
 }

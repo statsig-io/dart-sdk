@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'diagnostics_types.dart';
+
 import 'package:statsig/statsig.dart';
 
 import 'disk_util/disk_util.dart';
@@ -91,6 +93,11 @@ class StatsigLogger {
 
   void logNonExposureCheck(String name) {
     nonExposedChecks[name] = (nonExposedChecks[name] ?? 0) + 1;
+  }
+
+  void logDiagnostics(
+      DiagnosticsContext context, List<Map<String, dynamic>> markers) {
+    enqueue(StatsigEvent.createDiagnostics(context, markers));
   }
 
   void clear() {
