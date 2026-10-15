@@ -97,6 +97,8 @@ class StatsigClient {
 
   Future updateUser(StatsigUser user) async {
     var generation = ++_userGeneration;
+    var diagnostics = Diagnostics(DiagnosticsContext.updateUser, _options);
+    diagnostics.mark(DiagnosticsKey.overall, DiagnosticsAction.start);
     // Reset and reload on every updateUser, even for the same user, so the
     // call is always a fresh refetch (matching the other Statsig SDKs) rather
     // than a silent no-op. Marking the store Loading synchronously here means
@@ -108,12 +110,24 @@ class StatsigClient {
     await _logger.flush();
     if (generation != _userGeneration) {
       // A newer updateUser superseded this one while events were flushing.
+      diagnostics.clear();
       return;
     }
     _user = user.normalize(_options);
     StatsigMetadata.regenSessionID();
 
-    await _fetchInitialValues(generation);
+    var result = await _fetchInitialValues(generation, diagnostics, false);
+    if (generation == _userGeneration) {
+      diagnostics.mark(DiagnosticsKey.overall, DiagnosticsAction.end,
+          success: result.success,
+          error: result.error,
+          evaluationDetails: result.evaluationDetails);
+      if (diagnostics.shouldLog(result.response)) {
+        _logger.logDiagnostics(
+            DiagnosticsContext.updateUser, diagnostics.markers);
+      }
+    }
+    diagnostics.clear();
   }
 
   bool checkGate(String gateName,
@@ -213,13 +227,17 @@ class StatsigClient {
   }
 
   Future<_InitialValuesResult> _fetchInitialValues(int generation,
-      [Diagnostics? diagnostics]) async {
+      [Diagnostics? diagnostics, bool markCache = true]) async {
     var requestUser = _user;
-    diagnostics?.mark(DiagnosticsKey.initialize, DiagnosticsAction.start,
-        step: DiagnosticsStep.loadCache);
+    if (markCache) {
+      diagnostics?.mark(DiagnosticsKey.initialize, DiagnosticsAction.start,
+          step: DiagnosticsStep.loadCache);
+    }
     var cached = await _store.readCache(requestUser);
-    diagnostics?.mark(DiagnosticsKey.initialize, DiagnosticsAction.end,
-        step: DiagnosticsStep.loadCache, success: true);
+    if (markCache) {
+      diagnostics?.mark(DiagnosticsKey.initialize, DiagnosticsAction.end,
+          step: DiagnosticsStep.loadCache, success: true);
+    }
     if (generation != _userGeneration) {
       // A newer updateUser cleared the store while the cache was being
       // read; applying this user's values now would contaminate it.
