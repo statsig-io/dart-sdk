@@ -1,3 +1,17 @@
+## 1.3.0
+
+### New Features
+- Added lifecycle diagnostics for SDK initialization and `updateUser()` operations, including cache, network, and response-processing phases.
+- Added `forceDiagnosticsSampling` to `StatsigOptions` for deterministic diagnostics capture in development and test environments.
+
+### Improvements
+- Improved diagnostics metadata with evaluation source, timing information, HTTP status when available, region, and typed failure details.
+- Added bounded marker collection and omission of unavailable diagnostic fields for more consistent telemetry.
+
+### Fixes
+- Fixed lifecycle diagnostics for timeouts, malformed responses, rejected SDK keys, retries, and superseded `updateUser()` calls so reported outcomes reflect the completed operation.
+- Prevented late responses from timed-out or superseded requests from being recorded as part of a later initialization or user update.
+
 ## 1.2.9
 
 ### Fixes
